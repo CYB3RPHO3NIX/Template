@@ -1,1 +1,12 @@
-<Solution />
+<Solution>
+  <Project Path="Template.API/Template.API.csproj" />
+  <Project Path="Template.CommandHandlers.Tests/Template.CommandHandlers.Tests.csproj" />
+  <Project Path="Template.CommandHandlers/Template.CommandHandlers.csproj" />
+  <Project Path="Template.Commands/Template.Commands.csproj" />
+  <Project Path="Template.Database/Template.Database.csproj" />
+  <Project Path="Template.Queries/Template.Queries.csproj" />
+  <Project Path="Template.QueryHandlers.Tests/Template.QueryHandlers.Tests.csproj" />
+  <Project Path="Template.QueryHandlers/Template.QueryHandlers.csproj" />
+  <Project Path="Template.Services/Template.Services.csproj" />
+  <Project Path="Template.Shared.Models/Template.Shared.Models.csproj" />
+</Solution>

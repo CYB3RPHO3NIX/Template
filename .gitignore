@@ -361,3 +361,26 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Repository-specific
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+local.settings.json
+
+# Database and local tooling artifacts
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+
+# Frontend/package artifacts if added later
+node_modules/
+
+# Keep local dotnet tool manifest in source control
+!.config/
+!.config/dotnet-tools.json
