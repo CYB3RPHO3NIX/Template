@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Template.Queries\Template.Queries.csproj" />
+  </ItemGroup>
+
 </Project>
