@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Template.Queries
+namespace Template.Contracts.Query
 {
     public interface IQuery<TResult>
     {

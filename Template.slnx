@@ -1,9 +1,9 @@
 <Solution>
   <Project Path="Template.API/Template.API.csproj" />
-  <Project Path="Template.Bus/Template.Bus.csproj" Id="68603a74-3ee6-4065-bcfc-192ae01c37bc" />
   <Project Path="Template.CommandHandlers.Tests/Template.CommandHandlers.Tests.csproj" />
   <Project Path="Template.CommandHandlers/Template.CommandHandlers.csproj" />
   <Project Path="Template.Commands/Template.Commands.csproj" />
+  <Project Path="Template.Contracts/Template.Contracts.csproj" Id="ac9d71ec-df1f-4ed0-97b4-c97276684f80" />
   <Project Path="Template.Database/Template.Database.csproj" />
   <Project Path="Template.EventHandlers/Template.EventHandlers.csproj" Id="68970b1a-a6b3-4742-ad8b-a3c3c0fc8dfc" />
   <Project Path="Template.Events/Template.Events.csproj" Id="31cd543e-a1f9-473d-8f95-14f893914e9e" />

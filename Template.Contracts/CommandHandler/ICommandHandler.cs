@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Input;
-using Template.Commands;
+using Template.Contracts.Command;
 
-namespace Template.CommandHandlers
+namespace Template.Contracts.CommandHandler
 {
     public interface ICommandHandler<TCommand, TResult> where TCommand : ICommand<TResult>
     {

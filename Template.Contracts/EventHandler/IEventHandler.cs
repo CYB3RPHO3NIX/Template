@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Template.Events;
+using Template.Contracts.Event;
 
-namespace Template.EventHandlers
+namespace Template.Contracts.EventHandler
 {
     public interface IEventHandler<TEvent> where TEvent : IEvent
     {

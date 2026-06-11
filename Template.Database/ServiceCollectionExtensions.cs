@@ -21,7 +21,7 @@ namespace Template.Database
         ///     options.UseSqlServer(connectionString));
         /// ]]></code>
         /// </example>
-        public static IServiceCollection AddGenericDataAccess<TContext>(
+        public static IServiceCollection AddDatabaseAccess<TContext>(
             this IServiceCollection services,
             Action<DbContextOptionsBuilder> options)
             where TContext : DbContext

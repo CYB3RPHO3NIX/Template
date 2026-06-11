@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Template.Events
+namespace Template.Contracts.Event
 {
     public interface IEvent
     {

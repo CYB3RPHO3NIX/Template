@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Template.Commands
+namespace Template.Contracts.Command
 {
     public interface ICommand<TResult>
     {
