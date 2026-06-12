@@ -7,6 +7,8 @@ using Template.Database.Abstractions;
 using Template.Database.Domain.Entities.Identity;
 using Template.Queries.Identity.UserQueries;
 using Template.Contracts.ServiceBus;
+using Serilog;
+using Serilog.Context;
 
 namespace Template.QueryHandlers.Identity.UserQueryHandlers
 {
@@ -22,8 +24,15 @@ namespace Template.QueryHandlers.Identity.UserQueryHandlers
 
         public async Task<bool> Handle(DoesUserExistQuery query)
         {
-            bool userExists = await _userRepository.Query(true).AnyAsync(u => u.UserName == query.UserName || u.Email == query.Email);
-            return userExists;
+            using (LogContext.PushProperty("TraceId", query.TraceId))
+            {
+                Log.Information("Handling DoesUserExistQuery for UserName: {UserName}, Email: {Email}", query.UserName, query.Email);
+
+                bool userExists = await _userRepository.Query(true).AnyAsync(u => u.UserName == query.UserName || u.Email == query.Email);
+
+                Log.Information("User existence check result: {UserExists}", userExists);
+                return userExists;
+            }
         }
     }
 }

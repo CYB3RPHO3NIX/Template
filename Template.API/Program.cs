@@ -1,10 +1,12 @@
 
 using Microsoft.EntityFrameworkCore;
-using Template.Database.Domain.Contexts;
-using Template.Database;
-using Template.Services;
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
 using Template.CommandHandlers;
+using Template.Database;
+using Template.Database.Domain.Contexts;
 using Template.QueryHandlers;
+using Template.Services;
 
 namespace Template.API
 {
@@ -15,6 +17,22 @@ namespace Template.API
             var builder = WebApplication.CreateBuilder(args);
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            var sinkOptions = new MSSqlServerSinkOptions
+            {
+                TableName = "ApplicationLogs",
+                SchemaName = "log",
+                AutoCreateSqlTable = true
+            };
+
+            Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .Enrich.FromLogContext()
+            .WriteTo.MSSqlServer(
+                connectionString: connectionString,
+                sinkOptions: sinkOptions)
+            .CreateLogger();
+
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -25,6 +43,7 @@ namespace Template.API
             builder.Services.AddBus();
             builder.Services.RegisterCommandHandlers();
             builder.Services.RegisterQueryHandlers();
+            //builder.Services.RegisterEventHandlers(); needs to come
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -36,6 +55,12 @@ namespace Template.API
             app.UseSwagger();
 
             app.UseSwaggerUI();
+
+            app.MapGet("/", context =>
+            {
+                context.Response.Redirect("/swagger");
+                return Task.CompletedTask;
+            });
 
             app.UseHttpsRedirection();
 

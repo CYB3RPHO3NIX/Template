@@ -6,7 +6,7 @@ using Template.Shared.Models.Requests.Identity;
 
 namespace Template.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/identity")]
     [ApiController]
     public class IdentityController : ControllerBase
     {
@@ -15,11 +15,12 @@ namespace Template.API.Controllers
         {
             _bus = bus;
         }
-        [HttpPost("create")]
+        [HttpPost("user/create")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             Guid? userId = await _bus.Send<Guid?>(new CreateUserCommand
             {
+                TraceId = Guid.NewGuid(),
                 Email = request.Email,
                 UserName = request.UserName,
                 Password = request.Password
