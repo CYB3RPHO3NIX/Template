@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Template.CommandHandlers.Identity.User;
-using Template.Commands.Identity.User;
+using Template.CommandHandlers.Identity.UserCommandHandlers;
+using Template.Commands.Identity.UserCommands;
 using Template.Contracts.CommandHandler;
 
 namespace Template.CommandHandlers

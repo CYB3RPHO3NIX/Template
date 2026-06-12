@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Template.Shared.Models.Identity
+namespace Template.Shared.Models.DTOs.Identity
 {
     public class UserDTO
     {

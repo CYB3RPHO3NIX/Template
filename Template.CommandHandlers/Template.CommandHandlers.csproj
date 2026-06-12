@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Template.QueryHandlers\Template.QueryHandlers.csproj" />
     <ProjectReference Include="..\Template.Services\Template.Services.csproj" />
     <ProjectReference Include="..\Template.Shared.Models\Template.Shared.Models.csproj" />
+    <ProjectReference Include="..\Template.Utilities\Template.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

@@ -12,4 +12,5 @@
   <Project Path="Template.QueryHandlers/Template.QueryHandlers.csproj" />
   <Project Path="Template.Services/Template.Services.csproj" />
   <Project Path="Template.Shared.Models/Template.Shared.Models.csproj" />
+  <Project Path="Template.Utilities/Template.Utilities.csproj" Id="eb9d58b0-79c5-472c-8a41-6bace4ebf981" />
 </Solution>

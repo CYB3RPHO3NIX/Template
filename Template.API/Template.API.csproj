@@ -8,6 +8,20 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Template.CommandHandlers\Template.CommandHandlers.csproj" />
+    <ProjectReference Include="..\Template.Commands\Template.Commands.csproj" />
+    <ProjectReference Include="..\Template.Contracts\Template.Contracts.csproj" />
+    <ProjectReference Include="..\Template.Database\Template.Database.csproj" />
+    <ProjectReference Include="..\Template.EventHandlers\Template.EventHandlers.csproj" />
+    <ProjectReference Include="..\Template.Events\Template.Events.csproj" />
+    <ProjectReference Include="..\Template.Queries\Template.Queries.csproj" />
+    <ProjectReference Include="..\Template.QueryHandlers\Template.QueryHandlers.csproj" />
+    <ProjectReference Include="..\Template.Services\Template.Services.csproj" />
+    <ProjectReference Include="..\Template.Shared.Models\Template.Shared.Models.csproj" />
   </ItemGroup>
 
 </Project>

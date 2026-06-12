@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Template.Contracts.QueryHandler;
-using Template.Queries.Identity.User;
-using Template.QueryHandlers.Identity.User;
+using Template.Queries.Identity.UserQueries;
+using Template.QueryHandlers.Identity.UserQueryHandlers;
 
 namespace Template.QueryHandlers
 {

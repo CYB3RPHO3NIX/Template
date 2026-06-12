@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Template.Contracts.Query;
 
-namespace Template.Queries.Identity.User
+namespace Template.Queries.Identity.UserQueries
 {
     public class DoesUserExistQuery : IQuery<bool>
     {
