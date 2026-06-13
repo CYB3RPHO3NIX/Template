@@ -8,6 +8,7 @@ namespace Template.Queries.Identity.UserQueries
     public class DoesUserExistQuery : IQuery<bool>
     {
         public Guid TraceId { get; set; }
+        public Guid? UserId { get; set; }
         public string? Email { get; set; } = null;
         public string? UserName { get; set; } = null;
     }

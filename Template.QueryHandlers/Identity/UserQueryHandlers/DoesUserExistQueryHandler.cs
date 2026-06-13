@@ -28,7 +28,7 @@ namespace Template.QueryHandlers.Identity.UserQueryHandlers
             {
                 Log.Information("Handling DoesUserExistQuery for UserName: {UserName}, Email: {Email}", query.UserName, query.Email);
 
-                bool userExists = await _userRepository.Query(true).AnyAsync(u => u.UserName == query.UserName || u.Email == query.Email);
+                bool userExists = await _userRepository.Query(true).AnyAsync(u => u.UserName == query.UserName || u.Email == query.Email || u.Id == query.UserId);
 
                 Log.Information("User existence check result: {UserExists}", userExists);
                 return userExists;

@@ -13,6 +13,7 @@ namespace Template.CommandHandlers
         public static IServiceCollection RegisterCommandHandlers(this IServiceCollection services)
         {
             services.AddScoped<ICommandHandler<CreateUserCommand, Guid?>, CreateUserCommandHandler>();
+            services.AddScoped<ICommandHandler<UpdateUserCommand, bool>, UpdateUserCommandHandler>();
             return services;
         }
     }

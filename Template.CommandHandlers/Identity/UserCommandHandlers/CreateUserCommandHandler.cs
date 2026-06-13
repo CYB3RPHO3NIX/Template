@@ -49,6 +49,9 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                     });
                     await _unitOfWork.SaveChangesAsync();
                     Log.Information("User created successfully with UserId: {UserId}", userId);
+                }else
+                {
+                    Log.Information("User already exists with UserName: {UserName} or Email: {Email}", command.UserName, command.Email);
                 }
                 return userId;
             }

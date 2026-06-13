@@ -1,6 +1,5 @@
 <Solution>
   <Project Path="Template.API/Template.API.csproj" />
-  <Project Path="Template.CommandHandlers.Tests/Template.CommandHandlers.Tests.csproj" />
   <Project Path="Template.CommandHandlers/Template.CommandHandlers.csproj" />
   <Project Path="Template.Commands/Template.Commands.csproj" />
   <Project Path="Template.Contracts/Template.Contracts.csproj" Id="ac9d71ec-df1f-4ed0-97b4-c97276684f80" />
@@ -8,7 +7,6 @@
   <Project Path="Template.EventHandlers/Template.EventHandlers.csproj" Id="68970b1a-a6b3-4742-ad8b-a3c3c0fc8dfc" />
   <Project Path="Template.Events/Template.Events.csproj" Id="31cd543e-a1f9-473d-8f95-14f893914e9e" />
   <Project Path="Template.Queries/Template.Queries.csproj" />
-  <Project Path="Template.QueryHandlers.Tests/Template.QueryHandlers.Tests.csproj" />
   <Project Path="Template.QueryHandlers/Template.QueryHandlers.csproj" />
   <Project Path="Template.Services/Template.Services.csproj" />
   <Project Path="Template.Shared.Models/Template.Shared.Models.csproj" />
