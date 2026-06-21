@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Template.Contracts\Template.Contracts.csproj" />
+    <ProjectReference Include="..\Template.Shared.Models\Template.Shared.Models.csproj" />
   </ItemGroup>
 
 </Project>

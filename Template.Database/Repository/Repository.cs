@@ -12,7 +12,7 @@ namespace Template.Database.Repository
     /// </summary>
     /// <typeparam name="TEntity">The entity type that implements IEntity{TKey}.</typeparam>
     /// <typeparam name="TKey">The type of the entity's primary key.</typeparam>
-    public class GenericRepository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
+    public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
     {
         /// <summary>
         /// The Entity Framework DbContext instance.
@@ -28,7 +28,7 @@ namespace Template.Database.Repository
         /// Initializes a new instance of the GenericRepository class.
         /// </summary>
         /// <param name="context">The Entity Framework DbContext to use.</param>
-        public GenericRepository(DbContext context)
+        public Repository(DbContext context)
         {
             _context = context;
             _dbSet = context.Set<TEntity>();

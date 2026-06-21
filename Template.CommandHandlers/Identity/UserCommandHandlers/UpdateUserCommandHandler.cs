@@ -1,13 +1,11 @@
 ﻿using Serilog;
 using Serilog.Context;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Template.Commands.Identity.UserCommands;
 using Template.Contracts.CommandHandler;
 using Template.Contracts.ServiceBus;
 using Template.Database.Abstractions;
 using Template.Database.Domain.Entities.Identity;
+using Template.Shared.Models.Common;
 using Template.Utilities.Cryptography;
 
 namespace Template.CommandHandlers.Identity.UserCommandHandlers
@@ -38,7 +36,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                     if (!string.IsNullOrEmpty(command?.UserName))
                     {
                         Log.Information("Updating UserName for UserId: {UserId}", command.UserId);
-                        user.UserName = command.UserName;
+                        user.Username = command.UserName;
                     }
                     if (!string.IsNullOrEmpty(command?.Email))
                     {
@@ -52,7 +50,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                         user.PasswordSalt = passwordSalt;
                         user.PasswordHash = HashGenerator.GenerateSHA256Hash(command.Password, passwordSalt);
                     }
-                    if (command.IsActive.HasValue)
+                    if (command?.IsActive != null)
                     {
                         Log.Information("Updating IsActive Flag for UserId: {UserId}", command.UserId);
                         user.IsActive = command.IsActive.Value;

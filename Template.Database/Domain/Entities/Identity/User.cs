@@ -9,7 +9,7 @@ namespace Template.Database.Domain.Entities.Identity
     {
         public Guid Id { get; set; }
 
-        public string UserName { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
 
@@ -18,11 +18,5 @@ namespace Template.Database.Domain.Entities.Identity
         public string PasswordSalt { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;
-
-        public UserDetails? UserDetails { get; set; }
-
-        public ICollection<UserRole> UserRoles { get; set; } = new HashSet<UserRole>();
-
-        public ICollection<UserPermission> UserPermissions { get; set; } = new HashSet<UserPermission>();
     }
 }

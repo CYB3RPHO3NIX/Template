@@ -9,6 +9,7 @@ using Template.Queries.Identity.UserQueries;
 using Template.Contracts.ServiceBus;
 using Serilog;
 using Serilog.Context;
+using Template.Shared.Models.Common;
 
 namespace Template.QueryHandlers.Identity.UserQueryHandlers
 {
@@ -28,7 +29,7 @@ namespace Template.QueryHandlers.Identity.UserQueryHandlers
             {
                 Log.Information("Handling DoesUserExistQuery for UserName: {UserName}, Email: {Email}", query.UserName, query.Email);
 
-                bool userExists = await _userRepository.Query(true).AnyAsync(u => u.UserName == query.UserName || u.Email == query.Email || u.Id == query.UserId);
+                bool userExists = await _userRepository.Query(true).AnyAsync(u => u.Username == query.UserName || u.Email == query.Email || u.Id == query.UserId);
 
                 Log.Information("User existence check result: {UserExists}", userExists);
                 return userExists;

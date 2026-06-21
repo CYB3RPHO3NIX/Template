@@ -35,7 +35,7 @@ namespace Template.Database.UnitOfWork
 
             if (!_repositories.ContainsKey(type))
             {
-                _repositories[type] = new GenericRepository<TEntity, TKey>(_context);
+                _repositories[type] = new Repository<TEntity, TKey>(_context);
             }
 
             return (IRepository<TEntity, TKey>)_repositories[type];

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Template.Database.Domain.Contexts;
 
@@ -11,9 +12,11 @@ using Template.Database.Domain.Contexts;
 namespace Template.Database.Migrations
 {
     [DbContext(typeof(TemplateDbContext))]
-    partial class TemplateDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260621143951_AutoMigration_20260621_200946")]
+    partial class AutoMigration_20260621_200946
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,7 +50,7 @@ namespace Template.Database.Migrations
                         .HasColumnType("varchar(1024)")
                         .HasColumnOrder(5);
 
-                    b.Property<string>("Username")
+                    b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("varchar(256)")
                         .HasColumnOrder(2);
@@ -59,7 +62,7 @@ namespace Template.Database.Migrations
                         .IsUnique()
                         .HasDatabaseName("UX_Users_Email");
 
-                    b.HasIndex("Username")
+                    b.HasIndex("UserName")
                         .IsUnique()
                         .HasDatabaseName("UX_Users_UserName");
 

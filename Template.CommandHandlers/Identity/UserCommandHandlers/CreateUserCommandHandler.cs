@@ -6,6 +6,7 @@ using Template.Contracts.ServiceBus;
 using Template.Database.Abstractions;
 using Template.Database.Domain.Entities.Identity;
 using Template.Queries.Identity.UserQueries;
+using Template.Shared.Models.Common;
 using Template.Utilities.Cryptography;
 
 namespace Template.CommandHandlers.Identity.UserCommandHandlers
@@ -42,7 +43,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                     {
                         Id = userId,
                         Email = command.Email ?? string.Empty,
-                        UserName = command.UserName ?? string.Empty,
+                        Username = command.UserName ?? string.Empty,
                         PasswordHash = HashGenerator.GenerateSHA256Hash(command.Password, passwordSalt),
                         PasswordSalt = passwordSalt,
                         IsActive = true
@@ -52,6 +53,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                 }else
                 {
                     Log.Information("User already exists with UserName: {UserName} or Email: {Email}", command.UserName, command.Email);
+                    return null;
                 }
                 return userId;
             }

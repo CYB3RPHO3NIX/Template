@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Template.Contracts.Command;
+using Template.Shared.Models.Common;
 
 namespace Template.Commands.Identity.UserCommands
 {

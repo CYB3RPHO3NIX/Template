@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Template.Commands.Identity.UserCommands;
 using Template.Contracts.ServiceBus;
+using Template.Queries.Identity.UserQueries;
+using Template.Shared.Models.Common;
+using Template.Shared.Models.DTOs.Identity;
 using Template.Shared.Models.Requests.Identity;
 
 namespace Template.API.Controllers
@@ -15,6 +18,21 @@ namespace Template.API.Controllers
         {
             _bus = bus;
         }
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetUser(Guid userId)
+        {
+            var user = await _bus.Send<UserDTO?>(new GetUserByIdQuery
+            {
+                TraceId = Guid.NewGuid(),
+                UserId = userId
+            });
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
         [HttpPost("user/create")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
