@@ -49,6 +49,7 @@ namespace Template.API.Controllers
                 UserName = request.UserName,
                 Password = request.Password
             });
+
             return Ok(userId);
         }
         [HttpPatch("user/{userId}/update")]
@@ -68,6 +69,17 @@ namespace Template.API.Controllers
                 Password = request.Password,
                 IsActive = request.IsActive
             });
+            return Ok(result);
+        }
+
+        [HttpPatch("user/{userId}/delete")]
+        public async Task<IActionResult> DeleteUser(Guid userId)
+        {
+            bool result = await _bus.Send<bool>(new DeleteUserCommand
+            {
+                TraceId = Guid.NewGuid(),
+                UserId = userId
+            }); 
             return Ok(result);
         }
     }
