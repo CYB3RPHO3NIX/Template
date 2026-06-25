@@ -44,6 +44,8 @@ namespace Template.API
             builder.Services.RegisterCommandHandlers();
             builder.Services.RegisterQueryHandlers();
             //builder.Services.RegisterEventHandlers(); needs to come
+
+            builder.Services.RegisterMapster();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

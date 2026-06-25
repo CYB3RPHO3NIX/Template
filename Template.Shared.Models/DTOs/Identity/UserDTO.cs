@@ -6,7 +6,7 @@ namespace Template.Shared.Models.DTOs.Identity
 {
     public class UserDTO
     {
-        public Guid UserId { get; set; }
+        public Guid Id { get; set; }
         public string UserName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;

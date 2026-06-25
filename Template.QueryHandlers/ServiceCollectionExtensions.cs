@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Template.Contracts.QueryHandler;
 using Template.Queries.Identity.UserQueries;
 using Template.QueryHandlers.Identity.UserQueryHandlers;
+using Template.Shared.Models.DTOs.Identity;
 
 namespace Template.QueryHandlers
 {
@@ -13,6 +11,7 @@ namespace Template.QueryHandlers
         public static IServiceCollection RegisterQueryHandlers(this IServiceCollection services)
         {
             services.AddScoped<IQueryHandler<DoesUserExistQuery, bool>, DoesUserExistQueryHandler>();
+            services.AddScoped<IQueryHandler<GetUserByIdQuery, UserDTO?>, GetUserByIdQueryHandler>();
             return services;
         }
     }
