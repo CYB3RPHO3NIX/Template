@@ -3,9 +3,8 @@ using Serilog.Context;
 using Template.Commands.Identity.UserCommands;
 using Template.Contracts.CommandHandler;
 using Template.Contracts.ServiceBus;
-using Template.Database.Abstractions;
-using Template.Database.Domain.Entities.Identity;
-using Template.Shared.Models.Common;
+using Template.Database.Domain.Contexts;
+using Template.Database.Domain.Entities;
 using Template.Utilities.Cryptography;
 
 namespace Template.CommandHandlers.Identity.UserCommandHandlers
@@ -13,13 +12,11 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
     public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand, bool>
     {
         private readonly IServiceBus _bus;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<User, Guid> _userRepository;
-        public UpdateUserCommandHandler(IServiceBus bus, IUnitOfWork unitOfWork)
+        private readonly TemplateDbContext _dbContext;
+        public UpdateUserCommandHandler(IServiceBus bus, TemplateDbContext dbContext)
         {
             _bus = bus;
-            _unitOfWork = unitOfWork;
-            _userRepository = _unitOfWork.Repository<User, Guid>();
+            _dbContext = dbContext;
         }
         public async Task<bool> Handle(UpdateUserCommand command)
         {
@@ -29,7 +26,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                 
                 Log.Information("Checking if user already exists with UserId: {UserId}", command.UserId);
 
-                var user = await _userRepository.GetByIdAsync(command.UserId);
+                var user = await _dbContext.Users.FindAsync(command.UserId);
 
                 if(user != null)
                 {
@@ -55,8 +52,8 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                         Log.Information("Updating IsActive Flag for UserId: {UserId}", command.UserId);
                         user.IsActive = command.IsActive.Value;
                     }
-                    _userRepository.Update(user);
-                    await _unitOfWork.SaveChangesAsync();
+                    _dbContext.Users.Update(user);
+                    await _dbContext.SaveChangesAsync();
                     return true;
                 }
                 else

@@ -3,10 +3,9 @@ using Serilog.Context;
 using Template.Commands.Identity.UserCommands;
 using Template.Contracts.CommandHandler;
 using Template.Contracts.ServiceBus;
-using Template.Database.Abstractions;
-using Template.Database.Domain.Entities.Identity;
+using Template.Database.Domain.Contexts;
+using Template.Database.Domain.Entities;
 using Template.Queries.Identity.UserQueries;
-using Template.Shared.Models.Common;
 using Template.Utilities.Cryptography;
 
 namespace Template.CommandHandlers.Identity.UserCommandHandlers
@@ -14,13 +13,11 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
     public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, Guid?>
     {
         private readonly IServiceBus _bus;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<User, Guid> _userRepository;
-        public CreateUserCommandHandler(IServiceBus bus, IUnitOfWork unitOfWork)
+        private readonly TemplateDbContext _dbContext;
+        public CreateUserCommandHandler(IServiceBus bus, TemplateDbContext dbContext)
         {
             _bus = bus;
-            _unitOfWork = unitOfWork;
-            _userRepository = _unitOfWork.Repository<User, Guid>();
+            _dbContext = dbContext;
         }
         public async Task<Guid?> Handle(CreateUserCommand command)
         {
@@ -39,7 +36,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                 {
                     userId = Guid.NewGuid();
                     string passwordSalt = PasswordSaltGenerator.GenerateSalt();
-                    await _userRepository.AddAsync(new User
+                    await _dbContext.Users.AddAsync(new User
                     {
                         Id = userId,
                         Email = command.Email ?? string.Empty,
@@ -48,7 +45,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                         PasswordSalt = passwordSalt,
                         IsActive = true
                     });
-                    await _unitOfWork.SaveChangesAsync();
+                    await _dbContext.SaveChangesAsync();
                     Log.Information("User created successfully with UserId: {UserId}", userId);
                 }else
                 {

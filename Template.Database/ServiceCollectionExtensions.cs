@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Template.Database.Abstractions;
-using Template.Database.UnitOfWork;
 
 namespace Template.Database
 {
@@ -27,8 +25,6 @@ namespace Template.Database
             where TContext : DbContext
         {
             services.AddDbContext<TContext>(options);
-            services.AddScoped<IUnitOfWork, UnitOfWork<TContext>>();
-
             return services;
         }
     }

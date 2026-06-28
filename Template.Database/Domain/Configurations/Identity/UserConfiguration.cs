@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Template.Database.Domain.Entities.Identity;
+using Template.Database.Domain.Entities;
 
 namespace Template.Database.Domain.Configurations.Identity
 {

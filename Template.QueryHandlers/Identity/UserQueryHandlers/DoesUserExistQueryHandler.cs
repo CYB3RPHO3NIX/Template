@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Template.Contracts.QueryHandler;
-using Template.Database.Abstractions;
-using Template.Database.Domain.Entities.Identity;
-using Template.Queries.Identity.UserQueries;
-using Template.Contracts.ServiceBus;
+﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Context;
-using Template.Shared.Models.Common;
+using Template.Contracts.QueryHandler;
+using Template.Database.Domain.Contexts;
+using Template.Database.Domain.Entities;
+using Template.Queries.Identity.UserQueries;
 
 namespace Template.QueryHandlers.Identity.UserQueryHandlers
 {
     public class DoesUserExistQueryHandler : IQueryHandler<DoesUserExistQuery, bool>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<User, Guid> _userRepository;
-        public DoesUserExistQueryHandler(IUnitOfWork unitOfWork)
+        private readonly TemplateDbContext _dbContext;
+        public DoesUserExistQueryHandler(TemplateDbContext dbContext)
         {
-            _unitOfWork = unitOfWork;
-            _userRepository = _unitOfWork.Repository<User, Guid>();
+            _dbContext = dbContext;
         }
 
         public async Task<bool> Handle(DoesUserExistQuery query)
@@ -29,7 +22,7 @@ namespace Template.QueryHandlers.Identity.UserQueryHandlers
             {
                 Log.Information("Handling DoesUserExistQuery for UserName: {UserName}, Email: {Email}", query.UserName, query.Email);
 
-                bool userExists = await _userRepository.Query(true).AnyAsync(u => u.Username == query.UserName || u.Email == query.Email || u.Id == query.UserId);
+                bool userExists = await _dbContext.Users.AnyAsync(u => u.Username == query.UserName || u.Email == query.Email || u.Id == query.UserId);
 
                 Log.Information("User existence check result: {UserExists}", userExists);
                 return userExists;

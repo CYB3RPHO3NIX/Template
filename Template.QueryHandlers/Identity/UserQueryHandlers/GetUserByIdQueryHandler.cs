@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Context;
 using Template.Contracts.QueryHandler;
-using Template.Database.Abstractions;
-using Template.Database.Domain.Entities.Identity;
+using Template.Database.Domain.Contexts;
+using Template.Database.Domain.Entities;
 using Template.Queries.Identity.UserQueries;
 using Template.Shared.Models.DTOs.Identity;
 
@@ -12,19 +12,17 @@ namespace Template.QueryHandlers.Identity.UserQueryHandlers
 {
     public class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, UserDTO?>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<User, Guid> _userRepository;
-        public GetUserByIdQueryHandler(IUnitOfWork unitOfWork)
+        private readonly TemplateDbContext _dbContext;
+        public GetUserByIdQueryHandler(TemplateDbContext dbContext)
         {
-            _unitOfWork = unitOfWork;
-            _userRepository = _unitOfWork.Repository<User, Guid>();
+            _dbContext = dbContext;
         }
         public async Task<UserDTO?> Handle(GetUserByIdQuery query)
         {
             using (LogContext.PushProperty("TraceId", query.TraceId))
             {
                 Log.Information("Handling GetUsersByIdsQueryHandler for UserId: {UserId}", query.UserId);
-                var user = await _userRepository.Query(true).Where(x => x.Id == query.UserId).FirstOrDefaultAsync();
+                var user = await _dbContext.Users.Where(x => x.Id == query.UserId).FirstOrDefaultAsync();
                 if (user != null)
                 {
                     return user.Adapt<UserDTO>();

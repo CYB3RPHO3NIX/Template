@@ -1,14 +1,11 @@
 ﻿using Mapster;
 using Serilog;
 using Serilog.Context;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Template.Commands.Identity.UserCommands;
 using Template.Contracts.CommandHandler;
 using Template.Contracts.ServiceBus;
-using Template.Database.Abstractions;
-using Template.Database.Domain.Entities.Identity;
+using Template.Database.Domain.Contexts;
+using Template.Database.Domain.Entities;
 using Template.Queries.Identity.UserQueries;
 
 namespace Template.CommandHandlers.Identity.UserCommandHandlers
@@ -16,13 +13,11 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
     public class DeleteUserCommandHandler : ICommandHandler<DeleteUserCommand, bool>
     {
         private readonly IServiceBus _bus;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<User, Guid> _userRepository;
-        public DeleteUserCommandHandler(IServiceBus bus, IUnitOfWork unitOfWork)
+        private readonly TemplateDbContext _dbContext;
+        public DeleteUserCommandHandler(IServiceBus bus, TemplateDbContext dbContext)
         {
             _bus = bus;
-            _unitOfWork = unitOfWork;
-            _userRepository = _unitOfWork.Repository<User, Guid>();
+            _dbContext = dbContext;
         }
         public async Task<bool> Handle(DeleteUserCommand command)
         {
@@ -38,8 +33,8 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                     Log.Warning("User with id {UserId} does not exist", command.UserId);
                     return false;
                 }
-                _userRepository.Remove(user.Adapt<User>());
-                await _unitOfWork.SaveChangesAsync();
+                _dbContext.Users.Remove(user.Adapt<User>());
+                await _dbContext.SaveChangesAsync();
                 Log.Information("User with id {UserId} has been deleted", command.UserId);
                 return true;
             }
