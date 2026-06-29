@@ -22,7 +22,7 @@ namespace Template.QueryHandlers.Identity.UserQueryHandlers
             using (LogContext.PushProperty("TraceId", query.TraceId))
             {
                 Log.Information("Handling GetUsersByIdsQueryHandler for UserId: {UserId}", query.UserId);
-                var user = await _dbContext.Users.Where(x => x.Id == query.UserId).FirstOrDefaultAsync();
+                var user = await _dbContext.Users.Where(x => x.UserId == query.UserId).FirstOrDefaultAsync();
                 if (user != null)
                 {
                     return user.Adapt<UserDTO>();

@@ -38,7 +38,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                     string passwordSalt = PasswordSaltGenerator.GenerateSalt();
                     await _dbContext.Users.AddAsync(new User
                     {
-                        Id = userId,
+                        UserId = userId,
                         Email = command.Email ?? string.Empty,
                         Username = command.UserName ?? string.Empty,
                         PasswordHash = HashGenerator.GenerateSHA256Hash(command.Password, passwordSalt),

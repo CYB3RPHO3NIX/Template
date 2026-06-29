@@ -22,7 +22,7 @@ namespace Template.QueryHandlers.Identity.UserQueryHandlers
             {
                 Log.Information("Handling DoesUserExistQuery for UserName: {UserName}, Email: {Email}", query.UserName, query.Email);
 
-                bool userExists = await _dbContext.Users.AnyAsync(u => u.Username == query.UserName || u.Email == query.Email || u.Id == query.UserId);
+                bool userExists = await _dbContext.Users.AnyAsync(u => u.Username == query.UserName || u.Email == query.Email || u.UserId == query.UserId);
 
                 Log.Information("User existence check result: {UserExists}", userExists);
                 return userExists;
