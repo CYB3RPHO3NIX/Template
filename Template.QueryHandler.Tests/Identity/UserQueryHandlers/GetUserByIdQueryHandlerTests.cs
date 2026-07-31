@@ -5,6 +5,7 @@ using Template.Database.Domain.Contexts;
 using Template.Database.Domain.Entities;
 using Template.Shared.Models.DTOs.Identity;
 using Microsoft.EntityFrameworkCore;
+using Mapster;
 
 namespace Template.QueryHandler.Tests.Identity.UserQueryHandlers
 {
@@ -20,6 +21,12 @@ namespace Template.QueryHandler.Tests.Identity.UserQueryHandlers
                 .Options;
 
             _dbContext = new TemplateDbContext(options);
+
+            var config = TypeAdapterConfig.GlobalSettings;
+            config.NewConfig<User, UserDTO>()
+                .Map(dest => dest.Id, src => src.UserId)
+                .Map(dest => dest.UserName, src => src.Username);
+
             _handler = new GetUserByIdQueryHandler(_dbContext);
         }
 

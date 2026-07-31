@@ -52,6 +52,8 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                         Log.Information("Updating IsActive Flag for UserId: {UserId}", command.UserId);
                         user.IsActive = command.IsActive.Value;
                     }
+
+                    user.UpdatedOn = DateTime.UtcNow;
                     _dbContext.Users.Update(user);
                     await _dbContext.SaveChangesAsync();
                     return true;

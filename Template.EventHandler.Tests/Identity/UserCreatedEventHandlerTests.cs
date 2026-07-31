@@ -159,7 +159,7 @@ namespace Template.EventHandler.Tests.Identity
             var task = _handler.Handle(@event);
 
             // Assert
-            Assert.IsType<Task>(task);
+            Assert.IsAssignableFrom<Task>(task);
             await task;
             Assert.True(task.IsCompleted);
         }

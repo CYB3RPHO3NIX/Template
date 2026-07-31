@@ -9,6 +9,9 @@ namespace Template.EventHandlers.Identity
     {
         public async Task Handle(UserCreatedEvent @event)
         {
+            if (@event == null)
+                throw new ArgumentNullException(nameof(@event));
+
             using (LogContext.PushProperty("TraceId", @event.TraceId))
             {
                 Log.Information("Processing UserCreatedEvent for UserId: {UserId}, UserName: {UserName}, Email: {Email}",
