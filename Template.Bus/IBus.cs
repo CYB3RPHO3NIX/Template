@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
-using Template.Commands;
-using Template.Events;
-using Template.Queries;
+using Template.Contracts.Command;
+using Template.Contracts.Query;
+using Template.Contracts.Event;
 
 namespace Template.Bus
 {
@@ -14,6 +11,6 @@ namespace Template.Bus
 
         Task<TResult> Send<TResult>(IQuery<TResult> query);
 
-        Task Publish(IEvent @event);
+        Task Publish(IEvent domainEvent);
     }
 }

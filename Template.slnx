@@ -12,6 +12,8 @@
   <Project Path="Template.Services/Template.Services.csproj" />
   <Project Path="Template.Shared.Models/Template.Shared.Models.csproj" />
   <Project Path="Template.Utilities/Template.Utilities.csproj" Id="eb9d58b0-79c5-472c-8a41-6bace4ebf981" />
+  <Project Path="Template.Bus/Template.Bus.csproj" />
+  <Project Path="Template.Architecture.Tests/Template.Architecture.Tests.csproj" />
   <Project Path="Template.CommandHandler.Tests/Template.CommandHandler.Tests.csproj" />
   <Project Path="Template.QueryHandler.Tests/Template.QueryHandler.Tests.csproj" />
   <Project Path="Template.EventHandler.Tests/Template.EventHandler.Tests.csproj" />
