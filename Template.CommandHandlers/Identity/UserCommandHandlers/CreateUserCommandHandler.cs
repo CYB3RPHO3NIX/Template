@@ -5,6 +5,7 @@ using Template.Contracts.CommandHandler;
 using Template.Contracts.ServiceBus;
 using Template.Database.Domain.Contexts;
 using Template.Database.Domain.Entities;
+using Template.Events.Identity;
 using Template.Queries.Identity.UserQueries;
 using Template.Utilities.Cryptography;
 
@@ -36,7 +37,7 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                 {
                     userId = Guid.NewGuid();
                     string passwordSalt = PasswordSaltGenerator.GenerateSalt();
-                    await _dbContext.Users.AddAsync(new User
+                    var user = new User
                     {
                         UserId = userId,
                         Email = command.Email ?? string.Empty,
@@ -44,10 +45,24 @@ namespace Template.CommandHandlers.Identity.UserCommandHandlers
                         PasswordHash = HashGenerator.GenerateSHA256Hash(command.Password, passwordSalt),
                         PasswordSalt = passwordSalt,
                         IsActive = true
-                    });
+                    };
+                    await _dbContext.Users.AddAsync(user);
                     await _dbContext.SaveChangesAsync();
                     Log.Information("User created successfully with UserId: {UserId}", userId);
-                }else
+
+                    // Publish UserCreatedEvent for downstream processing
+                    var userCreatedEvent = new UserCreatedEvent
+                    {
+                        TraceId = command.TraceId,
+                        UserId = userId,
+                        UserName = user.Username,
+                        Email = user.Email,
+                        CreatedOn = user.CreatedOn
+                    };
+                    await _bus.Publish(userCreatedEvent);
+                    Log.Information("UserCreatedEvent published for UserId: {UserId}", userId);
+                }
+                else
                 {
                     Log.Information("User already exists with UserName: {UserName} or Email: {Email}", command.UserName, command.Email);
                     return null;

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Identity\" />
+    <ProjectReference Include="..\Template.Contracts\Template.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

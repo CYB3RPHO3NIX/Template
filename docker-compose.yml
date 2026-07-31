@@ -1,0 +1,72 @@
+version: '3.9'
+
+services:
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: template-db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "P@ssw0rd123!"
+      MSSQL_TCP_PORT: 1433
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssw0rd123!' -Q 'SELECT 1'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - template-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: template-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Data Source=sql-server,1433;Initial Catalog=TemplateDb;User Id=sa;Password=P@ssw0rd123!;Encrypt=False;Trust Server Certificate=True
+      - Serilog__WriteTo__0__Args__connectionString=Data Source=sql-server,1433;Initial Catalog=TemplateDb;User Id=sa;Password=P@ssw0rd123!;Encrypt=False;Trust Server Certificate=True
+      - JwtSettings__Secret=your-very-long-secret-key-change-this-in-production-at-least-32-characters-for-production-use
+      - JwtSettings__Issuer=https://api.template.local
+      - JwtSettings__Audience=template-api-clients
+      - JwtSettings__ExpiryMinutes=60
+      - JwtSettings__RefreshTokenExpiryDays=7
+    ports:
+      - "8080:8080"
+    depends_on:
+      sql-server:
+        condition: service_healthy
+    networks:
+      - template-network
+    restart: unless-stopped
+
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    container_name: template-consumer
+    environment:
+      - DOTNET_ENVIRONMENT=Docker
+      - ConnectionStrings__DefaultConnection=Data Source=sql-server,1433;Initial Catalog=TemplateDb;User Id=sa;Password=P@ssw0rd123!;Encrypt=False;Trust Server Certificate=True
+      - MessageQueue__Type=InMemory
+    depends_on:
+      sql-server:
+        condition: service_healthy
+      api:
+        condition: service_started
+    networks:
+      - template-network
+    restart: unless-stopped
+
+volumes:
+  sql-data:
+    driver: local
+
+networks:
+  template-network:
+    driver: bridge

@@ -1,0 +1,33 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["Template.Consumer/Template.Consumer.csproj", "Template.Consumer/"]
+COPY ["Template.Contracts/Template.Contracts.csproj", "Template.Contracts/"]
+COPY ["Template.Events/Template.Events.csproj", "Template.Events/"]
+COPY ["Template.Database/Template.Database.csproj", "Template.Database/"]
+COPY ["Template.Bus/Template.Bus.csproj", "Template.Bus/"]
+COPY ["Template.Services/Template.Services.csproj", "Template.Services/"]
+COPY ["Template.Utilities/Template.Utilities.csproj", "Template.Utilities/"]
+COPY ["Template.Shared.Models/Template.Shared.Models.csproj", "Template.Shared.Models/"]
+
+# Restore
+RUN dotnet restore "Template.Consumer/Template.Consumer.csproj"
+
+# Copy all source code
+COPY . .
+
+# Build
+RUN dotnet build "Template.Consumer/Template.Consumer.csproj" -c Release -o /app/build
+
+# Publish stage
+FROM build AS publish
+RUN dotnet publish "Template.Consumer/Template.Consumer.csproj" -c Release -o /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS runtime
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+ENTRYPOINT ["dotnet", "Template.Consumer.dll"]

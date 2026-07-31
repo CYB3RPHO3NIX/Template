@@ -2,9 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
+using Template.API.Extensions;
+using Template.API.Middleware;
 using Template.CommandHandlers;
 using Template.Database;
 using Template.Database.Domain.Contexts;
+using Template.EventHandlers;
 using Template.QueryHandlers;
 using Template.Services;
 
@@ -33,30 +36,35 @@ namespace Template.API
                 sinkOptions: sinkOptions)
             .CreateLogger();
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDatabaseAccess<TemplateDbContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddBus();
+            builder.Services.AddJwtTokenService();
+            builder.Services.AddApiLogging();
+            builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddCustomHealthChecks(builder.Services.BuildServiceProvider());
             builder.Services.RegisterCommandHandlers();
             builder.Services.RegisterQueryHandlers();
-            //builder.Services.RegisterEventHandlers(); needs to come
-
+            builder.Services.RegisterEventHandlers();
             builder.Services.RegisterMapster();
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
-                
             }
-            app.UseSwagger();
 
+            app.UseMiddleware<RequestResponseLoggingMiddleware>();
+            app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
+            app.UseSwagger();
             app.UseSwaggerUI();
+
+            app.MapCustomHealthChecks();
 
             app.MapGet("/", context =>
             {
@@ -65,9 +73,8 @@ namespace Template.API
             });
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllers();
 
             app.Run();

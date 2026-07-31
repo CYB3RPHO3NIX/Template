@@ -12,6 +12,8 @@ public partial class TemplateDbContext : DbContext
     {
     }
 
+    public virtual DbSet<ApiLog> ApiLogs { get; set; }
+
     public virtual DbSet<ApplicationLog> ApplicationLogs { get; set; }
 
     public virtual DbSet<Permission> Permissions { get; set; }
@@ -28,6 +30,30 @@ public partial class TemplateDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ApiLog>(entity =>
+        {
+            entity.ToTable("ApiLogs", "api");
+
+            entity.HasIndex(e => e.TraceId, "IX_ApiLogs_TraceId");
+
+            entity.HasIndex(e => e.UserId, "IX_ApiLogs_UserId");
+
+            entity.HasIndex(e => e.CreatedOn, "IX_ApiLogs_CreatedOn");
+
+            entity.Property(e => e.ApiLogId).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.TraceId).HasMaxLength(100);
+            entity.Property(e => e.Method).HasMaxLength(10);
+            entity.Property(e => e.Path).HasMaxLength(2000);
+            entity.Property(e => e.QueryString).HasMaxLength(2000);
+            entity.Property(e => e.UserAgent).HasMaxLength(500);
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.RequestHeaders).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.RequestBody).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.ResponseBody).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Exception).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getutcdate())");
+        });
+
         modelBuilder.Entity<ApplicationLog>(entity =>
         {
             entity.ToTable("ApplicationLogs", "log");

@@ -1,0 +1,127 @@
+name: Code Quality Checks
+
+on:
+  push:
+    branches: [ main, release, develop ]
+  pull_request:
+    branches: [ main, release, develop ]
+
+jobs:
+  quality:
+    name: Code Quality & Architecture
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore Template.sln
+
+    - name: Check formatting
+      run: dotnet format Template.sln --verify-no-changes --verbosity diagnostic
+      continue-on-error: true
+
+    - name: Build solution
+      run: dotnet build Template.sln -c Release --no-restore
+      env:
+        DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+    - name: Run Architecture Tests
+      run: dotnet test Template.sln --filter "FullyQualifiedName~Template.Architecture.Tests" -c Release --no-build --logger "console;verbosity=detailed"
+      continue-on-error: false
+
+    - name: Run Unit Tests
+      run: dotnet test Template.sln --filter "Category=UnitTest" -c Release --no-build --logger "console;verbosity=detailed"
+      continue-on-error: true
+
+    - name: Code Coverage
+      run: |
+        dotnet test Template.sln -c Release --no-build --collect:"XPlat Code Coverage" --logger "console;verbosity=minimal"
+      continue-on-error: true
+
+    - name: Check for code smells
+      run: |
+        Write-Host "Checking for common code smells..." -ForegroundColor Cyan
+
+        # Check for multiple violations
+        $issues = @()
+
+        # Find TODO/FIXME without proper tracking
+        $todos = Select-String -Path "Template.*/**.cs" -Pattern "TODO:|FIXME:" -Exclude "*Tests*" | `
+          Where-Object { $_ -notmatch "\[.*\]" } | `
+          Select-Object -First 10
+
+        if ($todos) {
+          $issues += "⚠️  Found TODO/FIXME without issue tracking:`n$($todos | ForEach-Object { $_.ToString() })"
+        }
+
+        # Find hardcoded strings that should be in appsettings
+        $hardcoded = Select-String -Path "Template.API/**.cs", "Template.Consumer/**.cs" -Pattern '"(amqp://|http://|https://)" | localhost | 5672 | 9092' | `
+          Select-Object -First 5
+
+        if ($hardcoded) {
+          $issues += "⚠️  Found hardcoded connection strings (use appsettings.json):`n$($hardcoded | ForEach-Object { $_.ToString() })"
+        }
+
+        if ($issues.Count -gt 0) {
+          Write-Host "Code Smell Warnings:" -ForegroundColor Yellow
+          $issues | ForEach-Object { Write-Host $_ }
+        } else {
+          Write-Host "✅ No obvious code smells detected" -ForegroundColor Green
+        }
+      shell: pwsh
+      continue-on-error: true
+
+    - name: Architecture Compliance Summary
+      run: |
+        Write-Host ""
+        Write-Host "✅ Code Quality Checks Complete" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "Enforced Rules:" -ForegroundColor Cyan
+        Write-Host "  • Commands do not depend on Handlers" -ForegroundColor Gray
+        Write-Host "  • Queries do not depend on Handlers" -ForegroundColor Gray
+        Write-Host "  • Events do not depend on Handlers" -ForegroundColor Gray
+        Write-Host "  • Handlers do not depend on Controllers" -ForegroundColor Gray
+        Write-Host "  • All types follow naming conventions" -ForegroundColor Gray
+        Write-Host "  • All interfaces start with 'I'" -ForegroundColor Gray
+        Write-Host "  • No public fields allowed" -ForegroundColor Gray
+        Write-Host "  • Handlers implement correct interfaces" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "Review: https://github.com/Enterprise-Projects/Template/blob/develop/SOLID_REFACTORING_GUIDE.md" -ForegroundColor Gray
+      shell: pwsh
+      continue-on-error: true
+
+  commit-lint:
+    name: Commit Message Lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Validate commit messages
+      run: |
+        echo "Checking commit message format..."
+
+        # Get commit messages
+        messages=$(git log --format=%B origin/${{ github.base_ref }}..HEAD)
+
+        # Validate format
+        if echo "$messages" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?!?: .{1,50}"; then
+          echo "✅ Commit messages follow conventional commits"
+        else
+          echo "⚠️  Commit messages should follow conventional commits"
+          echo "Format: type(scope): description"
+          echo "Types: feat, fix, docs, style, refactor, perf, test, chore, ci"
+        fi
