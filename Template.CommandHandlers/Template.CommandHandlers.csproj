@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Template.Commands\Template.Commands.csproj" />
     <ProjectReference Include="..\Template.Contracts\Template.Contracts.csproj" />
+    <ProjectReference Include="..\Template.Events\Template.Events.csproj" />
     <ProjectReference Include="..\Template.Queries\Template.Queries.csproj" />
     <ProjectReference Include="..\Template.QueryHandlers\Template.QueryHandlers.csproj" />
     <ProjectReference Include="..\Template.Services\Template.Services.csproj" />

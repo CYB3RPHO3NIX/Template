@@ -5,6 +5,7 @@ using Serilog.Sinks.MSSqlServer;
 using Template.CommandHandlers;
 using Template.Database;
 using Template.Database.Domain.Contexts;
+using Template.EventHandlers;
 using Template.QueryHandlers;
 using Template.Services;
 
@@ -43,7 +44,7 @@ namespace Template.API
             builder.Services.AddBus();
             builder.Services.RegisterCommandHandlers();
             builder.Services.RegisterQueryHandlers();
-            //builder.Services.RegisterEventHandlers(); needs to come
+            builder.Services.RegisterEventHandlers();
 
             builder.Services.RegisterMapster();
             var app = builder.Build();
