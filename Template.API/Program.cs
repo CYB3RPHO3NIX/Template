@@ -44,6 +44,7 @@ namespace Template.API
             builder.Services.AddBus();
             builder.Services.AddJwtTokenService();
             builder.Services.AddJwtAuthentication(builder.Configuration);
+            builder.Services.AddCustomHealthChecks(builder.Services.BuildServiceProvider());
             builder.Services.RegisterCommandHandlers();
             builder.Services.RegisterQueryHandlers();
             builder.Services.RegisterEventHandlers();
@@ -60,6 +61,8 @@ namespace Template.API
 
             app.UseSwagger();
             app.UseSwaggerUI();
+
+            app.MapCustomHealthChecks();
 
             app.MapGet("/", context =>
             {
