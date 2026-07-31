@@ -5,6 +5,7 @@ using Template.Contracts.ServiceBus;
 using Template.Queries.Identity.UserQueries;
 using Template.Shared.Models.DTOs.Identity;
 using Template.Shared.Models.Exceptions;
+using Template.Shared.Models.Pagination;
 using Template.Shared.Models.Requests.Identity;
 
 namespace Template.API.Controllers
@@ -45,6 +46,37 @@ namespace Template.API.Controllers
             {
                 throw new BusinessLogicException("Login failed", "LOGIN_FAILED");
             }
+
+            return Ok(new
+            {
+                success = true,
+                data = result,
+                traceId = HttpContext.TraceIdentifier
+            });
+        }
+
+        [HttpGet("users")]
+        [Authorize]
+        public async Task<IActionResult> ListUsers(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = "CreatedOn",
+            [FromQuery] bool sortDescending = true,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] bool? isActive = null)
+        {
+            var query = new ListUsersQuery
+            {
+                TraceId = Guid.NewGuid(),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                SortBy = sortBy,
+                SortDescending = sortDescending,
+                SearchTerm = searchTerm,
+                IsActive = isActive
+            };
+
+            var result = await _bus.Send<PaginatedResponse<UserDTO>>(query);
 
             return Ok(new
             {
