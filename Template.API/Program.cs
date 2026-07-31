@@ -43,6 +43,7 @@ namespace Template.API
             builder.Services.AddDatabaseAccess<TemplateDbContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddBus();
             builder.Services.AddJwtTokenService();
+            builder.Services.AddApiLogging();
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddCustomHealthChecks(builder.Services.BuildServiceProvider());
             builder.Services.RegisterCommandHandlers();
@@ -57,6 +58,7 @@ namespace Template.API
                 app.MapOpenApi();
             }
 
+            app.UseMiddleware<RequestResponseLoggingMiddleware>();
             app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
             app.UseSwagger();
