@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Template.CommandHandlers.Identity.UserCommandHandlers;
 using Template.Commands.Identity.UserCommands;
 using Template.Contracts.CommandHandler;
+using Template.Shared.Models.DTOs.Identity;
 
 namespace Template.CommandHandlers
 {
@@ -15,6 +13,7 @@ namespace Template.CommandHandlers
             services.AddScoped<ICommandHandler<CreateUserCommand, Guid?>, CreateUserCommandHandler>();
             services.AddScoped<ICommandHandler<UpdateUserCommand, bool>, UpdateUserCommandHandler>();
             services.AddScoped<ICommandHandler<DeleteUserCommand, bool>, DeleteUserCommandHandler>();
+            services.AddScoped<ICommandHandler<LoginCommand, LoginResponse?>, LoginCommandHandler>();
             return services;
         }
     }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
+using Template.API.Extensions;
 using Template.API.Middleware;
 using Template.CommandHandlers;
 using Template.Database;
@@ -41,6 +42,8 @@ namespace Template.API
             builder.Services.AddSwaggerGen();
             builder.Services.AddDatabaseAccess<TemplateDbContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddBus();
+            builder.Services.AddJwtTokenService();
+            builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.RegisterCommandHandlers();
             builder.Services.RegisterQueryHandlers();
             builder.Services.RegisterEventHandlers();
@@ -65,6 +68,7 @@ namespace Template.API
             });
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
 

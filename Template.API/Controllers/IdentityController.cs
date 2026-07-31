@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Template.Commands.Identity.UserCommands;
 using Template.Contracts.ServiceBus;
 using Template.Queries.Identity.UserQueries;
@@ -19,7 +20,42 @@ namespace Template.API.Controllers
             _bus = bus;
         }
 
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var validationResult = request.Validate();
+            if (!validationResult.IsValid)
+            {
+                var errors = new Dictionary<string, List<string>>
+                {
+                    { "validationErrors", validationResult.Errors }
+                };
+                throw new ValidationException(errors);
+            }
+
+            var result = await _bus.Send<LoginResponse?>(new LoginCommand
+            {
+                TraceId = Guid.NewGuid(),
+                Email = request.Email,
+                Password = request.Password
+            });
+
+            if (result == null)
+            {
+                throw new BusinessLogicException("Login failed", "LOGIN_FAILED");
+            }
+
+            return Ok(new
+            {
+                success = true,
+                data = result,
+                traceId = HttpContext.TraceIdentifier
+            });
+        }
+
         [HttpGet("user/{userId}")]
+        [Authorize]
         public async Task<IActionResult> GetUser(Guid userId)
         {
             var user = await _bus.Send<UserDTO?>(new GetUserByIdQuery
@@ -42,6 +78,7 @@ namespace Template.API.Controllers
         }
 
         [HttpPost("user/create")]
+        [Authorize]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             var validationResult = request.Validate();
@@ -76,6 +113,7 @@ namespace Template.API.Controllers
         }
 
         [HttpPatch("user/{userId}/update")]
+        [Authorize]
         public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
         {
             var validationResult = request.Validate();
@@ -112,6 +150,7 @@ namespace Template.API.Controllers
         }
 
         [HttpDelete("user/{userId}/delete")]
+        [Authorize]
         public async Task<IActionResult> DeleteUser(Guid userId)
         {
             var result = await _bus.Send<bool>(new DeleteUserCommand
