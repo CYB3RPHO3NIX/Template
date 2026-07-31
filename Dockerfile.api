@@ -1,0 +1,43 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["Template.API/Template.API.csproj", "Template.API/"]
+COPY ["Template.Commands/Template.Commands.csproj", "Template.Commands/"]
+COPY ["Template.Queries/Template.Queries.csproj", "Template.Queries/"]
+COPY ["Template.CommandHandlers/Template.CommandHandlers.csproj", "Template.CommandHandlers/"]
+COPY ["Template.QueryHandlers/Template.QueryHandlers.csproj", "Template.QueryHandlers/"]
+COPY ["Template.Events/Template.Events.csproj", "Template.Events/"]
+COPY ["Template.EventHandlers/Template.EventHandlers.csproj", "Template.EventHandlers/"]
+COPY ["Template.Contracts/Template.Contracts.csproj", "Template.Contracts/"]
+COPY ["Template.Database/Template.Database.csproj", "Template.Database/"]
+COPY ["Template.Bus/Template.Bus.csproj", "Template.Bus/"]
+COPY ["Template.Services/Template.Services.csproj", "Template.Services/"]
+COPY ["Template.Utilities/Template.Utilities.csproj", "Template.Utilities/"]
+COPY ["Template.Shared.Models/Template.Shared.Models.csproj", "Template.Shared.Models/"]
+
+# Restore
+RUN dotnet restore "Template.API/Template.API.csproj"
+
+# Copy all source code
+COPY . .
+
+# Build
+RUN dotnet build "Template.API/Template.API.csproj" -c Release -o /app/build
+
+# Publish stage
+FROM build AS publish
+RUN dotnet publish "Template.API/Template.API.csproj" -c Release -o /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/health/live || exit 1
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Template.API.dll"]
