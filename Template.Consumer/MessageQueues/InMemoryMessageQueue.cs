@@ -4,10 +4,15 @@ using Template.Contracts.MessageQueue;
 
 namespace Template.Consumer.MessageQueues
 {
+    /// <summary>
+    /// In-memory message queue for development and testing.
+    /// Single Responsibility: manage in-memory event subscriptions.
+    /// Thread-safe for single-process scenarios.
+    /// </summary>
     public class InMemoryMessageQueue : IMessageQueue
     {
         private readonly Dictionary<Type, List<Delegate>> _subscribers = new();
-        private bool _isConnected = false;
+        private bool _isConnected;
 
         public Task ConnectAsync()
         {
@@ -26,24 +31,12 @@ namespace Template.Consumer.MessageQueues
 
         public Task PublishAsync<TEvent>(TEvent @event) where TEvent : IEvent
         {
-            if (!_isConnected)
-            {
-                throw new InvalidOperationException("Message queue is not connected");
-            }
+            EnsureConnected();
 
             var eventType = typeof(TEvent);
-            Log.Information("Publishing event: {EventType}", eventType.Name);
+            LogEventPublished(eventType.Name);
 
-            if (_subscribers.TryGetValue(eventType, out var handlers))
-            {
-                foreach (var handler in handlers)
-                {
-                    if (handler is Func<TEvent, Task> typedHandler)
-                    {
-                        _ = typedHandler.Invoke(@event);
-                    }
-                }
-            }
+            PublishToSubscribers<TEvent>(@event, eventType);
 
             return Task.CompletedTask;
         }
@@ -51,15 +44,49 @@ namespace Template.Consumer.MessageQueues
         public Task SubscribeAsync<TEvent>(Func<TEvent, Task> handler) where TEvent : IEvent
         {
             var eventType = typeof(TEvent);
-            Log.Information("Subscribing to event: {EventType}", eventType.Name);
+            LogSubscribed(eventType.Name);
 
+            AddSubscriber(eventType, handler);
+
+            return Task.CompletedTask;
+        }
+
+        private void EnsureConnected()
+        {
+            if (!_isConnected)
+                throw new InvalidOperationException("Message queue is not connected");
+        }
+
+        private void PublishToSubscribers<TEvent>(TEvent @event, Type eventType) where TEvent : IEvent
+        {
+            if (_subscribers.TryGetValue(eventType, out var handlers))
+            {
+                InvokeHandlers<TEvent>(@event, handlers);
+            }
+        }
+
+        private static void InvokeHandlers<TEvent>(TEvent @event, List<Delegate> handlers) where TEvent : IEvent
+        {
+            foreach (var handler in handlers.OfType<Func<TEvent, Task>>())
+            {
+                _ = handler.Invoke(@event);
+            }
+        }
+
+        private void AddSubscriber<TEvent>(Type eventType, Func<TEvent, Task> handler) where TEvent : IEvent
+        {
             if (!_subscribers.ContainsKey(eventType))
             {
                 _subscribers[eventType] = new List<Delegate>();
             }
 
             _subscribers[eventType].Add(handler);
-            return Task.CompletedTask;
         }
+
+        private static void LogEventPublished(string eventTypeName)
+            => Log.Information("Publishing event: {EventType}", eventTypeName);
+
+        private static void LogSubscribed(string eventTypeName)
+            => Log.Information("Subscribing to event: {EventType}", eventTypeName);
     }
 }

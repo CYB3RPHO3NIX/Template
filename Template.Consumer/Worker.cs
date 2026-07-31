@@ -3,60 +3,92 @@ using Template.Contracts.MessageQueue;
 
 namespace Template.Consumer
 {
+    /// <summary>
+    /// Background service that manages event processing lifecycle.
+    /// Single Responsibility: orchestrate message queue and event listeners.
+    /// Dependency Inversion: depends on abstractions (IMessageQueue, IEventListener).
+    /// </summary>
     public class Worker : BackgroundService
     {
         private readonly IMessageQueue _messageQueue;
         private readonly IEnumerable<IEventListener> _eventListeners;
         private readonly ILogger<Worker> _logger;
+        private const int HealthCheckIntervalMs = 5000;
 
         public Worker(
             IMessageQueue messageQueue,
             IEnumerable<IEventListener> eventListeners,
             ILogger<Worker> logger)
         {
-            _messageQueue = messageQueue;
-            _eventListeners = eventListeners;
-            _logger = logger;
+            _messageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
+            _eventListeners = eventListeners ?? throw new ArgumentNullException(nameof(eventListeners));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Consumer service starting...");
+            LogServiceStarting();
 
-            try
-            {
-                // Connect to message queue
-                await _messageQueue.ConnectAsync();
-                Log.Information("Message queue connected");
-
-                // Start all event listeners
-                foreach (var listener in _eventListeners)
-                {
-                    await listener.StartAsync(cancellationToken);
-                }
-                Log.Information("All event listeners started");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting consumer service");
-                throw;
-            }
+            await ConnectMessageQueue();
+            await StartAllEventListeners(cancellationToken);
 
             await base.StartAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            await RunHealthCheckLoop(stoppingToken);
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            LogServiceStopping();
+
+            await StopAllEventListeners(cancellationToken);
+            await DisconnectMessageQueue();
+
+            await base.StopAsync(cancellationToken);
+        }
+
+        private async Task ConnectMessageQueue()
+        {
+            await _messageQueue.ConnectAsync();
+            Log.Information("Message queue connected");
+        }
+
+        private async Task StartAllEventListeners(CancellationToken cancellationToken)
+        {
+            await Task.WhenAll(_eventListeners
+                .Select(listener => listener.StartAsync(cancellationToken)));
+
+            Log.Information("All event listeners started");
+        }
+
+        private async Task DisconnectMessageQueue()
+        {
+            await _messageQueue.DisconnectAsync();
+            Log.Information("Message queue disconnected");
+        }
+
+        private async Task StopAllEventListeners(CancellationToken cancellationToken)
+        {
+            await Task.WhenAll(_eventListeners
+                .Select(listener => listener.StopAsync(cancellationToken)));
+
+            Log.Information("All event listeners stopped");
+        }
+
+        private async Task RunHealthCheckLoop(CancellationToken stoppingToken)
+        {
+            while (stoppingToken.IsCancellationRequested == false)
             {
                 try
                 {
                     _logger.LogDebug("Consumer service running...");
-                    await Task.Delay(5000, stoppingToken);
+                    await Task.Delay(HealthCheckIntervalMs, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
-                    // Expected when stopping
                     break;
                 }
                 catch (Exception ex)
@@ -66,29 +98,10 @@ namespace Template.Consumer
             }
         }
 
-        public override async Task StopAsync(CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("Consumer service stopping...");
+        private void LogServiceStarting()
+            => _logger.LogInformation("Consumer service starting...");
 
-            try
-            {
-                // Stop all event listeners
-                foreach (var listener in _eventListeners)
-                {
-                    await listener.StopAsync(cancellationToken);
-                }
-                Log.Information("All event listeners stopped");
-
-                // Disconnect from message queue
-                await _messageQueue.DisconnectAsync();
-                Log.Information("Message queue disconnected");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error stopping consumer service");
-            }
-
-            await base.StopAsync(cancellationToken);
-        }
+        private void LogServiceStopping()
+            => _logger.LogInformation("Consumer service stopping...");
     }
 }

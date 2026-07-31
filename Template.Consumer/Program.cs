@@ -15,19 +15,10 @@ try
         .UseSerilog()
         .ConfigureServices((context, services) =>
         {
-            // Configure which message queue to use
-            // Change this to use different implementations:
-            // - MessageQueueType.InMemory (for development/testing)
-            // - MessageQueueType.RabbitMQ (production with RabbitMQ)
-            // - MessageQueueType.Kafka (production with Kafka)
-            // - MessageQueueType.ServiceBus (production with Azure Service Bus)
-
-            var messageQueueType = Enum.Parse<MessageQueueType>(
-                context.Configuration["MessageQueue:Type"] ?? "InMemory");
-
-            var connectionString = context.Configuration["MessageQueue:ConnectionString"];
-
-            services.AddEventConsumer(messageQueueType, connectionString);
+            // Configuration-driven approach
+            // Set MessageQueue:Type and MessageQueue:ConnectionString in appsettings.json
+            // Supported types: InMemory, RabbitMQ, Kafka, ServiceBus
+            services.AddEventConsumer(context.Configuration);
         })
         .Build();
 

@@ -1,68 +1,69 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Template.Contracts.MessageQueue;
+using Template.Consumer.Configuration;
 using Template.Consumer.Listeners;
 using Template.Consumer.MessageQueues;
 
 namespace Template.Consumer
 {
+    /// <summary>
+    /// Dependency Injection configuration for consumer services.
+    /// Follows: Dependency Inversion, Strategy, and Factory patterns.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Add consumer services with specified message queue implementation
+        /// Register all consumer services using configuration-driven approach.
+        /// No switch/if-else statements - uses Strategy pattern polymorphism.
         /// </summary>
-        public static IServiceCollection AddEventConsumer(
-            this IServiceCollection services,
-            MessageQueueType messageQueueType,
-            string? connectionString = null)
+        public static IServiceCollection AddEventConsumer(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register message queue based on type
-            switch (messageQueueType)
-            {
-                case MessageQueueType.InMemory:
-                    services.AddSingleton<IMessageQueue, InMemoryMessageQueue>();
-                    break;
+            var messageQueueConfig = BindMessageQueueConfiguration(configuration);
 
-                case MessageQueueType.RabbitMQ:
-                    if (string.IsNullOrEmpty(connectionString))
-                        throw new ArgumentException("RabbitMQ connection string is required");
-                    services.AddSingleton<IMessageQueue>(new RabbitMQMessageQueue(connectionString));
-                    break;
+            RegisterMessageQueue(services, messageQueueConfig);
+            RegisterEventListeners(services);
+            RegisterWorkerService(services);
 
-                case MessageQueueType.Kafka:
-                    if (string.IsNullOrEmpty(connectionString))
-                        throw new ArgumentException("Kafka connection string is required");
-                    services.AddSingleton<IMessageQueue>(new KafkaMessageQueue(connectionString));
-                    break;
+            return services;
+        }
 
-                case MessageQueueType.ServiceBus:
-                    if (string.IsNullOrEmpty(connectionString))
-                        throw new ArgumentException("Service Bus connection string is required");
-                    services.AddSingleton<IMessageQueue>(new ServiceBusMessageQueue(connectionString));
-                    break;
+        private static MessageQueueConfiguration BindMessageQueueConfiguration(IConfiguration configuration)
+        {
+            var config = new MessageQueueConfiguration();
+            configuration.GetSection("MessageQueue").Bind(config);
+            LogConfigurationLoaded(config);
+            return config;
+        }
 
-                default:
-                    throw new ArgumentException($"Unsupported message queue type: {messageQueueType}");
-            }
+        private static void RegisterMessageQueue(
+            IServiceCollection services,
+            MessageQueueConfiguration config)
+        {
+            var factory = new MessageQueueStrategyFactory();
+            var messageQueue = factory.CreateMessageQueue(config.Type, config.ConnectionString);
 
-            // Register event listeners
+            services.AddSingleton<IMessageQueue>(messageQueue);
+        }
+
+        private static void RegisterEventListeners(IServiceCollection services)
+        {
             services.AddScoped<IEventListener, UserCreatedEventListener>();
 
             // TODO: Add more event listeners here as you create new events
             // services.AddScoped<IEventListener, ProductCreatedEventListener>();
             // services.AddScoped<IEventListener, OrderProcessedEventListener>();
-
-            // Register worker service
-            services.AddHostedService<Worker>();
-
-            return services;
         }
-    }
 
-    public enum MessageQueueType
-    {
-        InMemory,
-        RabbitMQ,
-        Kafka,
-        ServiceBus
+        private static void RegisterWorkerService(IServiceCollection services)
+        {
+            services.AddHostedService<Worker>();
+        }
+
+        private static void LogConfigurationLoaded(MessageQueueConfiguration config)
+        {
+            Log.Information("Message Queue Configuration Loaded - Type: {Type}", config.Type);
+        }
     }
 }
