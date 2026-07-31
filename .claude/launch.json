@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Template API",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Template.API/Template.API.csproj"],
+      "port": 5000
+    }
+  ]
+}
