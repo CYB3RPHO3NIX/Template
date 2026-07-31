@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
+using Template.API.Middleware;
 using Template.CommandHandlers;
 using Template.Database;
 using Template.Database.Domain.Contexts;
@@ -34,8 +35,6 @@ namespace Template.API
                 sinkOptions: sinkOptions)
             .CreateLogger();
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
@@ -45,18 +44,18 @@ namespace Template.API
             builder.Services.RegisterCommandHandlers();
             builder.Services.RegisterQueryHandlers();
             builder.Services.RegisterEventHandlers();
-
             builder.Services.RegisterMapster();
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
-                
             }
-            app.UseSwagger();
 
+            app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
+            app.UseSwagger();
             app.UseSwaggerUI();
 
             app.MapGet("/", context =>
@@ -66,9 +65,7 @@ namespace Template.API
             });
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
             app.MapControllers();
 
             app.Run();
