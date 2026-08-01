@@ -1,10 +1,10 @@
 # Quick Start: Generate a Microservice from Template
 
-Choose your preferred method below:
+**One command to generate your complete microservice.**
 
-## ⚡ Method 1: PowerShell Script (Fastest)
+## ⚡ PowerShell Script (Fastest & Simplest)
 
-Works immediately without any setup. One command to generate your entire microservice.
+Works immediately without any setup.
 
 ### Prerequisites
 - PowerShell 5.0+ (built-in on Windows 10+)
@@ -67,88 +67,6 @@ InvoiceService/
 ├── InvoiceService.Contracts/        # DTOs & interfaces
 └── InvoiceService.sln
 ```
-
----
-
-## 📦 Method 2: dotnet new Template (Professional)
-
-For enterprise distribution via NuGet or team-wide installation.
-
-### Prerequisites
-- .NET 10.0 SDK
-
-### Step 1: Install Template
-
-**From local filesystem:**
-```bash
-dotnet new install "C:\Path\To\Template"
-```
-
-**From Git repository:**
-```bash
-dotnet new install "https://github.com/your-org/Template.git"
-```
-
-**From NuGet feed:**
-```bash
-dotnet new install Enterprise.CQRSMicroservice
-```
-
-### Step 2: Create Service
-
-**Basic:**
-```bash
-dotnet new cqrs-microservice -n InvoiceService
-```
-
-**With custom path:**
-```bash
-dotnet new cqrs-microservice -n OrderService -o "C:\Projects\OrderService"
-```
-
-**With company name:**
-```bash
-dotnet new cqrs-microservice -n PaymentService -CompanyName "Acme"
-```
-
-### Step 3: Verify
-
-```bash
-dotnet build
-dotnet run --project InvoiceService.API
-```
-
-### Step 4: Manage
-
-**List installed templates:**
-```bash
-dotnet new list | grep cqrs
-```
-
-**Uninstall:**
-```bash
-dotnet new uninstall Enterprise.CQRSMicroservice
-```
-
-**Update:**
-```bash
-dotnet new uninstall Enterprise.CQRSMicroservice
-dotnet new install Enterprise.CQRSMicroservice --nuget-source https://your-feed/
-```
-
----
-
-## 🔄 Comparison
-
-| Feature | PowerShell Script | dotnet new |
-|---------|-------------------|-----------|
-| **Setup Time** | ⚡ None | 5 minutes |
-| **Command** | `.\Create-*` | `dotnet new` |
-| **Works Offline** | ✓ Yes | ✓ Yes |
-| **Team Distribution** | Git + script | NuGet package |
-| **Visual Studio Integration** | ✓ Launches VS | ⚠ Manual open |
-| **Enterprise Ready** | ✓ Yes | ✓✓ Best |
-| **Learning Curve** | Simple | Minimal |
 
 ---
 

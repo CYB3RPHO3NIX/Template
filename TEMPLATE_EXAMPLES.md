@@ -1,12 +1,8 @@
-# Template Usage Examples
+# PowerShell Script - Real-World Examples
 
-Real-world examples of using both methods to create microservices.
+Real-world examples of using the PowerShell script to create microservices.
 
-## Example 1: Quick Invoice Service
-
-**Goal:** Create InvoiceService in 30 seconds
-
-### Using PowerShell Script
+## Example 1: Quick Invoice Service (30 seconds)
 
 ```powershell
 cd C:\Projects
@@ -20,43 +16,42 @@ cd C:\Projects
 4. NuGet restored
 5. Visual Studio opens with solution
 
-**Result:** Fully functional microservice, ready to code!
-
-```
-InvoiceService/
-├── InvoiceService.API/
-│   ├── Program.cs
-│   ├── appsettings.json
-│   └── Controllers/
-│       └── IdentityController.cs (ready to customize)
-├── InvoiceService.Commands/
-├── InvoiceService.Queries/
-├── InvoiceService.Events/
-└── InvoiceService.sln
+**Next:**
+```powershell
+cd InvoiceService
+dotnet build
+dotnet run --project InvoiceService.API
 ```
 
 ---
 
-## Example 2: Enterprise Services with Company Name
+## Example 2: Multiple Services with Company Name
 
 **Goal:** Create 3 services for Acme Corporation with proper namespaces
-
-### Using PowerShell Script (Batch)
 
 ```powershell
 $company = "AcmeCorp"
 $basePath = "C:\Projects"
-
 $services = @("Invoice", "Order", "Payment")
 
 foreach ($service in $services) {
     Write-Host "Creating $service Service..."
+    
     .\Create-MicroserviceFromTemplate.ps1 `
         -ServiceName "$($service)Service" `
         -OutputPath $basePath `
         -CompanyName $company
-    Write-Host "✓ $service Service created!"
+    
+    Write-Host "✓ $service Service created!`n"
 }
+```
+
+**Result:**
+```
+C:\Projects\
+├── InvoiceService/   (AcmeCorp.InvoiceService.*)
+├── OrderService/     (AcmeCorp.OrderService.*)
+└── PaymentService/   (AcmeCorp.PaymentService.*)
 ```
 
 **Generated namespaces:**
@@ -66,21 +61,11 @@ namespace AcmeCorp.OrderService.Queries { }
 namespace AcmeCorp.PaymentService.Events { }
 ```
 
-**Result:**
-```
-C:\Projects\
-├── InvoiceService/      (with AcmeCorp.InvoiceService.* namespaces)
-├── OrderService/        (with AcmeCorp.OrderService.* namespaces)
-└── PaymentService/      (with AcmeCorp.PaymentService.* namespaces)
-```
-
 ---
 
 ## Example 3: From Git Repository
 
 **Goal:** Generate services from a Git-hosted template
-
-### Using PowerShell Script
 
 ```powershell
 .\Create-MicroserviceFromTemplate.ps1 `
@@ -94,137 +79,18 @@ C:\Projects\
 1. Git clones from repository
 2. `.git` folder removed (fresh repo for new service)
 3. All Template references replaced with ShippingService
-4. All Enterprise references replaced with Logistics Inc
-
-**Result:** New service ready for independent Git initialization
+4. All Logistics Inc references applied
 
 ---
 
-## Example 4: Enterprise-Wide with dotnet new
+## Example 4: Batch Services Organization
 
-**Goal:** Install template for entire development team
-
-### Installation (One-Time)
-
-**From NuGet (Recommended for enterprise):**
-
-```bash
-# IT Admin publishes template to internal NuGet
-# Developers install globally
-dotnet new install Enterprise.CQRSMicroservice --nuget-source https://internal-nuget.company.com
-```
-
-**Or from Git:**
-```bash
-dotnet new install "https://github.com/your-org/Template.git"
-```
-
-### Usage (Any Developer)
-
-```bash
-# Developer creates their service anytime
-dotnet new cqrs-microservice -n InvoiceService
-
-# Or with custom path
-dotnet new cqrs-microservice -n OrderService -o "D:\Projects"
-
-# Or with company prefix
-dotnet new cqrs-microservice -n PaymentService -CompanyName "MyCompany"
-```
-
-**Result:** 
-- Fully standardized services across the team
-- Consistent architecture
-- No manual file renaming needed
-- One-line to create any service
-
----
-
-## Example 5: CI/CD - Automated Service Generation
-
-**Goal:** Auto-generate microservices via GitHub Actions workflow
-
-### GitHub Actions Workflow
-
-```yaml
-name: Create New Microservice
-on: 
-  workflow_dispatch:
-    inputs:
-      service_name:
-        description: 'Service name (e.g., InvoiceService)'
-        required: true
-      company_name:
-        description: 'Company name prefix'
-        required: false
-        default: 'Enterprise'
-
-jobs:
-  create-service:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '10.0.x'
-      
-      - name: Create Service from Template
-        shell: pwsh
-        run: |
-          .\Create-MicroserviceFromTemplate.ps1 `
-            -ServiceName "${{ github.event.inputs.service_name }}" `
-            -OutputPath "./generated" `
-            -CompanyName "${{ github.event.inputs.company_name }}" `
-            -SkipRestore
-      
-      - name: Verify Build
-        run: |
-          cd "./generated/${{ github.event.inputs.service_name }}"
-          dotnet build
-      
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.event.inputs.service_name }}
-          path: ./generated/${{ github.event.inputs.service_name }}
-          
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          commit-message: "Create new microservice: ${{ github.event.inputs.service_name }}"
-          title: "New Microservice: ${{ github.event.inputs.service_name }}"
-          body: |
-            # New Microservice Generated
-            
-            **Service Name:** ${{ github.event.inputs.service_name }}
-            **Company:** ${{ github.event.inputs.company_name }}
-            
-            This service was auto-generated from the CQRS template.
-            
-            ## Review Checklist
-            - [ ] Verify project naming
-            - [ ] Check namespaces
-            - [ ] Review appsettings.json
-            - [ ] Configure database
-            - [ ] Setup CI/CD pipeline
-          branch: microservice/${{ github.event.inputs.service_name }}
-```
-
-**Usage:** Go to GitHub Actions tab → Select workflow → Run with inputs
-
----
-
-## Example 6: Custom Output Structure
-
-**Goal:** Generate multiple services in organized folder structure
-
-### PowerShell Script
+**Goal:** Create services organized by business tier
 
 ```powershell
 $company = "MyCompany"
-$servicesPath = "C:\Projects\Microservices"
+$basePath = "C:\Projects\Microservices"
+
 $services = @(
     @{ Name = "UserService"; Tier = "Identity" },
     @{ Name = "OrderService"; Tier = "Business" },
@@ -232,7 +98,8 @@ $services = @(
 )
 
 foreach ($service in $services) {
-    $tierPath = Join-Path $servicesPath $service.Tier
+    $tierPath = Join-Path $basePath $service.Tier
+    New-Item -ItemType Directory -Path $tierPath -Force | Out-Null
     
     Write-Host "Creating $($service.Name) in $($service.Tier)..."
     
@@ -243,243 +110,321 @@ foreach ($service in $services) {
 }
 ```
 
-**Generated structure:**
+**Result:**
 ```
 Microservices/
 ├── Identity/
 │   └── UserService/
-│       ├── UserService.API/
-│       ├── UserService.Commands/
-│       └── UserService.sln
 ├── Business/
-│   ├── OrderService/
-│   └── ProductService/
+│   └── OrderService/
 └── Integration/
-    ├── NotificationService/
-    └── EmailService/
+    └── NotificationService/
 ```
 
 ---
 
-## Example 7: Development Workflow
+## Example 5: Development Workflow
 
 **Goal:** Set up local development with generated services
 
-### Step-by-Step
-
-```bash
+```powershell
 # 1. Create service
 .\Create-MicroserviceFromTemplate.ps1 -ServiceName "MyService" -DontOpen
 
-# 2. Navigate to service
+# 2. Navigate
 cd MyService
 
 # 3. Initialize Git
 git init
 git add .
 git commit -m "Initial commit from CQRS template"
-
-# 4. Add remote
 git remote add origin https://github.com/myorg/MyService.git
 
-# 5. Configure local settings
+# 4. Create local settings
 Copy-Item "appsettings.json" "appsettings.Development.json"
-# Edit appsettings.Development.json with local database/queue settings
+# Edit appsettings.Development.json with local settings
 
-# 6. Build and verify
+# 5. Build and verify
 dotnet build
+
+# 6. Run API
 dotnet run --project MyService.API
 
-# 7. Browse to API
+# 7. Browse API docs
 Start-Process "https://localhost:7001/swagger"
+
+# 8. Push to remote
+git push -u origin main
 ```
 
 ---
 
-## Example 8: Template Customization
+## Example 6: Skip NuGet Restore (Faster)
 
-**Goal:** Extend template with company-specific features
-
-### Before Distribution
-
-```bash
-# 1. Clone template
-git clone https://github.com/your-org/Template.git
-cd Template
-
-# 2. Customize (add your features, update docs, etc.)
-# - Add company-specific middleware
-# - Update authentication strategy
-# - Add logging configuration
-# - etc.
-
-# 3. Test the template
-.\Create-MicroserviceFromTemplate.ps1 -ServiceName "TestService"
-cd TestService
-dotnet build  # Should work
-dotnet test   # If tests exist
-
-# 4. Commit customizations
-git add .
-git commit -m "Customize template with company standards"
-
-# 5. Publish
-git push origin main
-
-# 6. Create release tag
-git tag -a v1.1.0 -m "Release v1.1.0 with company customizations"
-git push origin v1.1.0
-
-# 7. Publish to NuGet (for enterprise)
-dotnet pack -c Release -o ./nupkg
-dotnet nuget push ./nupkg/*.nupkg -s https://internal-nuget-server
-```
-
----
-
-## Example 9: Migration from Old Monolith
-
-**Goal:** Generate new microservices during modernization
-
-### Strategy
+**Goal:** Generate service quickly without restoring NuGet
 
 ```powershell
-# Old monolith features to extract
-$features = @(
-    "Invoicing",
-    "Inventory", 
-    "Shipping",
-    "Reporting"
-)
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "QuickService" `
+    -SkipRestore `
+    -DontOpen
 
-$company = "LegacyCorp"
+cd QuickService
 
-# Generate a service for each feature
-foreach ($feature in $features) {
-    $serviceName = "$($feature)Service"
-    
-    Write-Host "Extracting $feature..."
-    
-    .\Create-MicroserviceFromTemplate.ps1 `
-        -ServiceName $serviceName `
-        -OutputPath "C:\Projects\Modernization" `
-        -CompanyName $company
+# Restore manually later
+dotnet restore
+dotnet build
+```
+
+---
+
+## Example 7: From Different Template Location
+
+**Goal:** Use a custom template directory
+
+```powershell
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "CustomService" `
+    -OutputPath "C:\Projects" `
+    -TemplatePath "D:\MyTemplates\CustomCQRS"
+```
+
+---
+
+## Example 8: Automation Script
+
+**Goal:** Reusable PowerShell function for rapid generation
+
+```powershell
+function New-Microservice {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$ServiceName,
         
-    # TODO: Copy relevant code from monolith into new service
-    # TODO: Update database migration scripts
-    # TODO: Setup API routes matching old endpoints
-    # TODO: Implement database sync/migration layer
+        [string]$OutputPath = "C:\Projects",
+        [string]$CompanyName = "Enterprise"
+    )
+    
+    $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+    
+    & "$scriptPath\Create-MicroserviceFromTemplate.ps1" `
+        -ServiceName $ServiceName `
+        -OutputPath $OutputPath `
+        -CompanyName $CompanyName
+    
+    Write-Host "✓ Service created at: $(Join-Path $OutputPath $ServiceName)"
 }
 
-Write-Host "✓ All services generated. Ready for feature migration!"
+# Usage:
+New-Microservice -ServiceName "PaymentService" -CompanyName "Acme"
 ```
 
 ---
 
-## Example 10: Quick Reference Card
+## Example 9: Validation & Error Handling
+
+**Goal:** Create services with validation
 
 ```powershell
-# ⚡ FASTEST METHOD - PowerShell
+function New-ValidatedMicroservice {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidatePattern('^[A-Z][a-zA-Z0-9]*$')]
+        [string]$ServiceName,
+        
+        [Parameter(Mandatory=$true)]
+        [ValidateScript({Test-Path $_})]
+        [string]$OutputPath
+    )
+    
+    $projectPath = Join-Path $OutputPath $ServiceName
+    
+    if (Test-Path $projectPath) {
+        Write-Error "Project already exists at: $projectPath"
+        return
+    }
+    
+    .\Create-MicroserviceFromTemplate.ps1 `
+        -ServiceName $ServiceName `
+        -OutputPath $OutputPath
+    
+    Write-Host "✓ Successfully created $ServiceName"
+}
 
-# Basic
-.\Create-MicroserviceFromTemplate.ps1 -ServiceName "ServiceName"
+# Usage (with validation):
+New-ValidatedMicroservice -ServiceName "OrderService" -OutputPath "C:\Projects"
 
-# Full control
+# This will error (invalid name):
+New-ValidatedMicroservice -ServiceName "order-service" -OutputPath "C:\Projects"
+# Error: order-service does not match pattern '^[A-Z][a-zA-Z0-9]*$'
+```
+
+---
+
+## Example 10: Integration with CI/CD
+
+**Goal:** Generate services in GitHub Actions / Azure Pipeline
+
+**PowerShell in GitHub Actions:**
+```yaml
+name: Create Microservice
+on: workflow_dispatch
+  inputs:
+    service_name:
+      required: true
+      description: "Service name (e.g., InvoiceService)"
+
+jobs:
+  create:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.x'
+      
+      - name: Create Service
+        shell: pwsh
+        run: |
+          .\Create-MicroserviceFromTemplate.ps1 `
+            -ServiceName "${{ github.event.inputs.service_name }}" `
+            -OutputPath "./generated" `
+            -SkipRestore
+      
+      - name: Build Service
+        run: |
+          cd "./generated/${{ github.event.inputs.service_name }}"
+          dotnet build
+      
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.service_name }}
+          path: ./generated/${{ github.event.inputs.service_name }}
+```
+
+---
+
+## Example 11: Template Update Check
+
+**Goal:** Update template and propagate changes
+
+```powershell
+# 1. Get latest template
+git -C "C:\Templates\CQRSTemplate" pull origin main
+
+# 2. Generate updated version
 .\Create-MicroserviceFromTemplate.ps1 `
-    -ServiceName "ServiceName" `
+    -ServiceName "TestService" `
     -OutputPath "C:\Projects" `
-    -CompanyName "Company" `
     -TemplatePath "C:\Templates\CQRSTemplate"
 
-# Flags
--DontOpen      # Don't open in VS
--SkipRestore   # Skip NuGet restore
-```
+# 3. Verify changes
+cd C:\Projects\TestService
+git diff
 
-```bash
-# 📦 PROFESSIONAL METHOD - dotnet new
-
-# Install (one-time)
-dotnet new install "path/to/template"
-
-# Create service
-dotnet new cqrs-microservice -n ServiceName
-
-# List all installed
-dotnet new list | grep cqrs
-
-# Uninstall
-dotnet new uninstall Enterprise.CQRSMicroservice
+# 4. Review and commit
+git add .
+git commit -m "Update template to latest version"
 ```
 
 ---
 
-## Troubleshooting Examples
-
-### Example 1: PowerShell execution disabled
+## Example 12: Quick Reference Commands
 
 ```powershell
-# Error: "Script execution is disabled"
+# Basic - just works
+.\Create-MicroserviceFromTemplate.ps1 -ServiceName "InvoiceService"
 
-# Solution: Enable for current user
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+# Custom path
+.\Create-MicroserviceFromTemplate.ps1 -ServiceName "InvoiceService" -OutputPath "C:\Projects"
 
-# Then run script
-.\Create-MicroserviceFromTemplate.ps1 -ServiceName "ServiceName"
-```
+# With company
+.\Create-MicroserviceFromTemplate.ps1 -ServiceName "InvoiceService" -CompanyName "Acme"
 
-### Example 2: File permissions issue
+# From Git
+.\Create-MicroserviceFromTemplate.ps1 -ServiceName "InvoiceService" -TemplatePath "https://github.com/org/Template.git"
 
-```powershell
-# Error: "Access denied" when writing files
-
-# Solution: Run PowerShell as Administrator
-# Right-click PowerShell → "Run as administrator"
-# Then run script
-
-.\Create-MicroserviceFromTemplate.ps1 -ServiceName "ServiceName"
-```
-
-### Example 3: Template not found
-
-```powershell
-# Error: "Template.sln not found"
-
-# Solution: Verify template path
-Get-ChildItem "C:\Path\To\Template" -Filter "*.sln"
-
-# Should show: Template.sln
-# If not, use correct path
+# All options
 .\Create-MicroserviceFromTemplate.ps1 `
-    -ServiceName "ServiceName" `
-    -TemplatePath "C:\Correct\Path"
+    -ServiceName "InvoiceService" `
+    -OutputPath "C:\Projects" `
+    -CompanyName "Acme" `
+    -TemplatePath "." `
+    -SkipRestore `
+    -DontOpen
+
+# Show help
+.\Create-MicroserviceFromTemplate.ps1 -Help
 ```
-
----
-
-## Performance Benchmarks
-
-| Task | PowerShell | dotnet new |
-|------|-----------|-----------|
-| Install template | N/A | 30 seconds |
-| Create service | 15-20 seconds | 5-8 seconds |
-| Restore NuGet | 30-60 seconds | Automatic |
-| Total first service | ~2 minutes | ~1.5 minutes |
-| Total per additional service (after install) | ~2 minutes | 30-40 seconds |
-
-**Takeaway:** PowerShell is faster for a single service. dotnet new is much faster after initial setup, especially for creating many services.
 
 ---
 
 ## Next Steps
 
-After generating a service:
+After generation:
 
-1. ✅ Verify project builds: `dotnet build`
-2. 🔧 Configure database connection in `appsettings.json`
-3. 📝 Add your domain entities
-4. 🎯 Create first command/query pair
-5. 🚀 Setup CI/CD pipeline
-6. 📊 Configure monitoring & logging
+```powershell
+cd YourService
+dotnet build                                    # Build project
+dotnet test                                     # Run tests
+dotnet run --project YourService.API            # Start API
+# Browse: https://localhost:7001/swagger        # View API docs
+```
 
-See [CLAUDE.md](CLAUDE.md) for architecture details and getting started guide.
+Then:
+- Add domain entities
+- Create commands and queries
+- Implement handlers
+- Configure database
+- Setup message queue
+- Deploy!
+
+---
+
+## Troubleshooting Examples
+
+### PowerShell Execution Disabled
+
+```powershell
+# Error: cannot be loaded because running scripts is disabled
+
+# Fix:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Template Not Found
+
+```powershell
+# Error: Template not found
+
+# Verify:
+Get-ChildItem "C:\Path" -Filter "*.sln"
+
+# Fix: Use correct path
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "Service" `
+    -TemplatePath "C:\Correct\Path"
+```
+
+### Project Already Exists
+
+```powershell
+# Error: Project folder already exists
+
+# Fix 1: Different output path
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "Service" `
+    -OutputPath "C:\DifferentPath"
+
+# Fix 2: Different service name
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "DifferentName" `
+    -OutputPath "C:\Projects"
+```
+
+---
+
+**Happy microservice generating!** 🚀

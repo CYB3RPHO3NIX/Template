@@ -1,417 +1,411 @@
-# Enterprise CQRS Microservice Template - Usage Guide
+# Enterprise CQRS Microservice Template - PowerShell Guide
 
-This guide shows how to use this template to create new microservices with a single command.
+This guide shows how to use the PowerShell script to create new microservices with a single command.
 
-## Quick Start (Local Usage)
+## Quick Start
 
-### Option 1: Using Local Template (Immediate)
+### Prerequisites
 
-**Prerequisites:**
-- .NET 10.0 SDK installed
-- Git installed
+- **PowerShell 5.0+** - Built-in on Windows 10+
+- **.NET 10.0 SDK** - [Download](https://dotnet.microsoft.com/download)
+- **Git** - Optional, only needed if using Git repository as template source
 
-**Step 1: Clone the Template**
-```bash
-git clone https://github.com/your-org/Template.git C:\Templates\CQRSTemplate
-cd C:\Templates\CQRSTemplate
+### Basic Usage
+
+**Step 1: Navigate to Template Directory**
+```powershell
+cd C:\Path\To\Template
 ```
 
-**Step 2: Install the Template**
-```bash
-dotnet new install C:\Templates\CQRSTemplate
+**Step 2: Run the Script**
+```powershell
+.\Create-MicroserviceFromTemplate.ps1 -ServiceName "InvoiceService" -OutputPath "C:\Projects"
 ```
 
-**Step 3: Create a New Microservice**
-```bash
-# Basic usage (uses default name "MyMicroservice")
-dotnet new cqrs-microservice -n InvoiceService
-
-# With company name override
-dotnet new cqrs-microservice -n OrderService -CompanyName "YourCompanyName"
-
-# Specify output directory
-dotnet new cqrs-microservice -n PaymentService -o C:\Projects\Services
-```
-
-**Step 4: Verify Installation**
-```bash
-dotnet new list | grep cqrs
-```
-
-### Option 2: Using PowerShell Script (Fastest)
-
-If you want to skip the `dotnet new` setup entirely, use the provided PowerShell script.
-
-See the **PowerShell Automation** section below.
-
-## Installation Methods
-
-### Method 1: Local Installation (Recommended for Teams)
-
-Perfect for shared team development.
-
-```bash
-# Install from local filesystem
-dotnet new install "C:\Path\To\Template"
-
-# Or install from Git repository
-dotnet new install "https://github.com/your-org/Template.git"
-
-# Verify installation
-dotnet new list
-```
-
-### Method 2: NuGet Package (For Distribution)
-
-To share with the entire organization via NuGet:
-
-**Step 1: Create NuGet Package**
-```bash
-cd C:\Projects\Template
-
-# Pack the template
-dotnet pack .template.config\template.json -o C:\NuGetOutput
-
-# Or use this detailed command
-dotnet new pack --output-dir C:\NuGetOutput
-```
-
-**Step 2: Publish to Internal NuGet Feed**
-```bash
-dotnet nuget push C:\NuGetOutput\*.nupkg -s https://your-nuget-server/
-```
-
-**Step 3: Install from NuGet**
-```bash
-# Install from NuGet feed
-dotnet new install Enterprise.CQRSMicroservice
-
-# Create new service
-dotnet new cqrs-microservice -n InvoiceService
-```
-
-**Step 4: Update Template**
-```bash
-# When template is updated, reinstall
-dotnet new uninstall Enterprise.CQRSMicroservice
-dotnet new install Enterprise.CQRSMicroservice
-```
-
-### Method 3: GitHub Template Repository
-
-Make this a GitHub template repository for one-click creation:
-
-1. Go to repository settings
-2. Enable "Template repository"
-3. Users click "Use this template" button
-4. Manual find-replace for "Template" → "ServiceName"
-
-## Usage Examples
-
-### Example 1: Invoice Service
-
-```bash
-dotnet new cqrs-microservice -n InvoiceService
-cd InvoiceService
+**Step 3: Done!**
+```powershell
+cd C:\Projects\InvoiceService
 dotnet build
 dotnet run --project InvoiceService.API
 ```
 
-**Generated structure:**
-```
-InvoiceService/
-├── InvoiceService.API/
-├── InvoiceService.Consumer/
-├── InvoiceService.Database/
-├── InvoiceService.Commands/
-├── InvoiceService.Queries/
-├── InvoiceService.Events/
-├── InvoiceService.EventHandlers/
-├── InvoiceService.CommandHandlers/
-├── InvoiceService.QueryHandlers/
-├── InvoiceService.Contracts/
-└── InvoiceService.sln
-```
+## Usage Examples
 
-### Example 2: Order Service with Company Name
-
-```bash
-dotnet new cqrs-microservice -n OrderService -CompanyName "Acme Corp"
-```
-
-**Namespaces generated:**
-```csharp
-namespace AcmeCorp.OrderService.Commands { }
-namespace AcmeCorp.OrderService.Queries { }
-namespace AcmeCorp.OrderService.Events { }
-// etc.
-```
-
-### Example 3: Batch Creation (Multiple Services)
+### Example 1: Basic Service Creation
 
 ```powershell
-$services = @("InvoiceService", "OrderService", "PaymentService", "ShippingService")
+.\Create-MicroserviceFromTemplate.ps1 -ServiceName "InvoiceService"
+```
+
+**Result:** Creates `InvoiceService` folder in current directory
+
+### Example 2: Custom Output Path
+
+```powershell
+.\Create-MicroserviceFromTemplate.ps1 -ServiceName "OrderService" -OutputPath "C:\Projects"
+```
+
+**Result:** Creates `C:\Projects\OrderService`
+
+### Example 3: With Company Name
+
+```powershell
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "PaymentService" `
+    -OutputPath "C:\Projects" `
+    -CompanyName "AcmeCorp"
+```
+
+**Generated namespaces:** `AcmeCorp.PaymentService.*`
+
+### Example 4: From Git Repository
+
+```powershell
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "ShippingService" `
+    -TemplatePath "https://github.com/your-org/CQRSTemplate.git" `
+    -OutputPath "C:\Projects"
+```
+
+### Example 5: Skip NuGet Restore & Visual Studio
+
+```powershell
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "InvoiceService" `
+    -SkipRestore `
+    -DontOpen
+```
+
+### Example 6: Batch Creation (Multiple Services)
+
+```powershell
+$services = @("Invoice", "Order", "Payment", "Shipping")
 $basePath = "C:\Projects"
+$company = "MyCompany"
 
 foreach ($service in $services) {
-    Write-Host "Creating $service..."
-    dotnet new cqrs-microservice -n $service -o "$basePath\$service"
-    Write-Host "$service created successfully!`n"
+    Write-Host "Creating $service Service..."
+    
+    .\Create-MicroserviceFromTemplate.ps1 `
+        -ServiceName "$($service)Service" `
+        -OutputPath $basePath `
+        -CompanyName $company
+    
+    Write-Host "✓ $service Service created!`n"
 }
 ```
 
-## Template Variables
+## Script Parameters
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `ServiceName` | Name of your microservice | `InvoiceService` |
-| `RootNamespace` | Root namespace (auto-derived from ServiceName) | `InvoiceService` |
-| `CompanyName` | Optional company name prefix | `AcmeCorp` |
+### Required
 
-### Variable Replacement Scope
+| Parameter | Alias | Description | Example |
+|-----------|-------|-------------|---------|
+| `-ServiceName` | `-n` | Service name (PascalCase) | `InvoiceService` |
+| `-OutputPath` | `-o` | Output directory path | `C:\Projects` |
 
-- **ServiceName** replaces:
-  - All `Template` folder/file names
-  - Project file names (`.csproj`)
-  - Namespace declarations
-  - Class names and references
+### Optional
 
-- **CompanyName** replaces:
-  - `Enterprise` in namespace prefixes
-  - Company branding in documentation
+| Parameter | Alias | Description | Default |
+|-----------|-------|-------------|---------|
+| `-CompanyName` | `-c` | Company name for namespace | `Enterprise` |
+| `-TemplatePath` | `-t` | Path to template (local or Git URL) | Current directory |
+| `-SkipRestore` | | Skip NuGet restore | `false` |
+| `-DontOpen` | | Don't open in Visual Studio | `false` |
 
-## Managing Templates
+## What the Script Does
 
-### List Installed Templates
-```bash
-dotnet new list
-dotnet new list | grep cqrs
+1. **Validates Input**
+   - Checks service name is PascalCase
+   - Verifies output directory exists
+   - Ensures project doesn't already exist
+
+2. **Clones/Copies Template**
+   - From local filesystem or Git repository
+   - Preserves directory structure
+
+3. **Renames Files & Folders**
+   - `Template.*` → `YourServiceName.*`
+   - Updates all project folders
+   - Updates solution file name
+
+4. **Replaces Text in All Files**
+   - Updates namespaces: `Template` → `YourServiceName`
+   - Updates company prefix: `Enterprise` → `YourCompanyName`
+   - Applies to `.cs`, `.csproj`, `.sln`, `.json`, `.md`, `.xml` files
+
+5. **Restores NuGet Packages**
+   - Runs `dotnet restore` (can skip with `-SkipRestore`)
+   - Ensures all dependencies are downloaded
+
+6. **Opens in Visual Studio**
+   - Launches solution in Visual Studio (can skip with `-DontOpen`)
+   - Ready to start coding
+
+## Generated Project Structure
+
+All generated services have this structure:
+
+```
+YourService/
+├── YourService.API/
+│   ├── Program.cs
+│   ├── appsettings.json
+│   ├── Controllers/
+│   └── YourService.API.csproj
+├── YourService.Consumer/
+│   ├── Worker.cs
+│   ├── Program.cs
+│   └── YourService.Consumer.csproj
+├── YourService.Commands/
+│   └── YourService.Commands.csproj
+├── YourService.CommandHandlers/
+│   └── YourService.CommandHandlers.csproj
+├── YourService.Queries/
+│   └── YourService.Queries.csproj
+├── YourService.QueryHandlers/
+│   └── YourService.QueryHandlers.csproj
+├── YourService.Events/
+│   └── YourService.Events.csproj
+├── YourService.EventHandlers/
+│   └── YourService.EventHandlers.csproj
+├── YourService.Database/
+│   └── YourService.Database.csproj
+├── YourService.Contracts/
+│   └── YourService.Contracts.csproj
+└── YourService.sln
 ```
 
-### Uninstall Template
-```bash
-# Uninstall local template
-dotnet new uninstall "C:\Path\To\Template"
+## Naming Conventions
 
-# Uninstall NuGet package
-dotnet new uninstall Enterprise.CQRSMicroservice
-```
+### Service Name
 
-### Update Template
+- **Format:** PascalCase, alphanumeric only
+- **Examples:**
+  - ✅ `InvoiceService`
+  - ✅ `OrderProcessingService`
+  - ❌ `invoice-service` (kebab-case)
+  - ❌ `invoiceService` (camelCase)
 
-When you update the template source:
+### Company Name
 
-```bash
-# Uninstall old version
-dotnet new uninstall "C:\Path\To\Template"
-
-# Reinstall with updates
-dotnet new install "C:\Path\To\Template"
-```
-
-## Customization
-
-### Adding New Parameters
-
-Edit `.template.config\template.json` to add custom parameters:
-
-```json
-"symbols": {
-  "DatabaseEngine": {
-    "type": "parameter",
-    "description": "Database: SqlServer or PostgreSQL",
-    "defaultValue": "SqlServer",
-    "replaces": "SqlServer"
-  }
-}
-```
-
-Then use in templates:
-```bash
-dotnet new cqrs-microservice -n MyService -DatabaseEngine PostgreSQL
-```
-
-### Conditional Files/Folders
-
-Use replacement tokens in filenames:
-
-- `Template.sln` → `{ServiceName}.sln`
-- `Template.API` → `{ServiceName}.API`
-- `src/Template/` → `src/{ServiceName}/`
-
-### Post-Actions
-
-Configure automatic actions after template generation (in `template.json`):
-
-```json
-"postActions": [
-  {
-    "id": "restore",
-    "actionId": "210D431B-A78B-4D2F-B762-4F2289A3F200",
-    "description": "Restore NuGet packages"
-  },
-  {
-    "id": "openSolution",
-    "actionId": "84C0DA21-51C8-4541-9E7C-61978820175F",
-    "description": "Open in Visual Studio"
-  }
-]
-```
-
-## PowerShell Automation Script
-
-See `Create-MicroserviceFromTemplate.ps1` for automated generation with validation.
-
-Usage:
-```powershell
-.\Create-MicroserviceFromTemplate.ps1 -ServiceName "InvoiceService" -OutputPath "C:\Projects"
-
-# With company name
-.\Create-MicroserviceFromTemplate.ps1 `
-  -ServiceName "OrderService" `
-  -OutputPath "C:\Projects" `
-  -CompanyName "AcmeCorp"
-```
-
-## CI/CD Integration
-
-### GitHub Actions
-
-```yaml
-name: Generate Microservice
-
-on: 
-  workflow_dispatch:
-    inputs:
-      service_name:
-        description: 'Service name (e.g., InvoiceService)'
-        required: true
-
-jobs:
-  create-service:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '10.0.x'
-      
-      - name: Create Service
-        run: |
-          dotnet new install ./
-          dotnet new cqrs-microservice -n ${{ github.event.inputs.service_name }} -o ./output
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.event.inputs.service_name }}
-          path: ./output
-```
+- **Format:** PascalCase, optional
+- **Default:** `Enterprise`
+- **Examples:**
+  - ✅ `AcmeCorp`
+  - ✅ `MyCompany`
+  - Default namespaces: `Enterprise.InvoiceService.*`
+  - Custom namespaces: `AcmeCorp.InvoiceService.*`
 
 ## Troubleshooting
 
-### Template not found
-```bash
-# Verify installation
-dotnet new list | grep cqrs
+### PowerShell Execution Disabled
 
-# Reinstall if missing
-dotnet new install "C:\Path\To\Template"
+**Error:**
+```
+Cannot be loaded because running scripts is disabled on this system
 ```
 
-### Namespace not replaced correctly
-- Ensure `ServiceName` doesn't have special characters
-- Check `template.json` `sourceName` matches project name
-- Run: `dotnet new cqrs-microservice --help` to verify parameters
+**Solution:**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
-### Post-action failures (restore/open)
-- These are non-critical and can be skipped with `--no-restore`
-- Manual restore: `dotnet restore` after generation
+### Template Not Found
 
-### File encoding issues (special characters)
-- Ensure `.template.config/template.json` is UTF-8
-- File paths should use PascalCase (e.g., `InvoiceService`)
+**Error:**
+```
+✗ Template not found at: C:\Path\To\Template
+```
 
-## Best Practices
+**Solution:**
+Verify the path contains `Template.sln`:
+```powershell
+Get-ChildItem "C:\Path\To\Template" -Filter "*.sln"
+```
 
-1. **Naming Convention**
-   - Use PascalCase: `InvoiceService`, not `invoice-service` or `invoiceservice`
-   - Keep service names concise: `Invoice` or `InvoiceService`, not `InvoicingMicroservice`
+### Project Already Exists
 
-2. **Namespace Consistency**
-   - Company: `YourCompany` (PascalCase)
-   - Service: `ServiceName` (PascalCase)
-   - Result: `YourCompany.ServiceName.*`
+**Error:**
+```
+✗ Destination already exists: C:\Projects\InvoiceService
+```
 
-3. **Git Workflow**
-   ```bash
-   # Create from template
-   dotnet new cqrs-microservice -n MyService
-   
-   # Initialize git
-   cd MyService
-   git init
-   git add .
-   git commit -m "Initial commit from CQRS microservice template"
-   git remote add origin https://github.com/org/MyService.git
-   git push -u origin main
-   ```
+**Solution:**
+Use a different output directory or service name, or delete the existing folder.
 
-4. **Template Updates**
-   - Keep template in sync with your architecture standards
-   - Version your template releases
-   - Document breaking changes
-   - Test template generation regularly
+### Permission Denied
 
-5. **Sharing Templates**
-   - Internal NuGet feed for organization
-   - Private GitHub repository with template enabled
-   - Team wiki with setup instructions
+**Error:**
+```
+✗ Access denied when writing files
+```
+
+**Solution:**
+Run PowerShell as Administrator.
+
+### Git Clone Failed
+
+**Error:**
+```
+✗ Git clone failed
+```
+
+**Solution:**
+- Verify Git is installed: `git --version`
+- Verify repository URL is correct
+- Check internet connection
+- Verify Git credentials if private repository
+
+## Performance
+
+| Operation | Time |
+|-----------|------|
+| Validate inputs | ~100ms |
+| Clone/copy template | ~500ms |
+| Rename files | ~200ms |
+| Replace text | ~600ms |
+| NuGet restore | ~5-30 seconds |
+| **Total** | **~1-2 minutes** |
+
+*Times vary based on system performance and NuGet package availability*
+
+## Next Steps After Generation
+
+### 1. Verify Build
+```powershell
+cd YourService
+dotnet build
+```
+
+### 2. Review Generated Files
+- Check namespaces are correct
+- Verify project names match
+- Review appsettings.json
+
+### 3. Configure Database
+Edit `appsettings.json`:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=YourService;Trusted_Connection=true;"
+  }
+}
+```
+
+### 4. Start API Server
+```powershell
+dotnet run --project YourService.API
+```
+
+### 5. Browse API Documentation
+Open: `https://localhost:7001/swagger`
+
+### 6. Initialize Git
+```powershell
+git init
+git add .
+git commit -m "Initial commit from CQRS template"
+git remote add origin https://github.com/your-org/YourService.git
+git push -u origin main
+```
 
 ## Advanced Usage
 
-### Programmatic Template Generation (C#)
+### Custom Template Location
 
-```csharp
-using System.Diagnostics;
-
-var processInfo = new ProcessStartInfo
-{
-    FileName = "dotnet",
-    Arguments = $"new cqrs-microservice -n MyService -o C:\\Projects",
-    UseShellExecute = false,
-    RedirectStandardOutput = true
-};
-
-using (var process = Process.Start(processInfo))
-{
-    string output = process.StandardOutput.ReadToEnd();
-    process.WaitForExit();
-    Console.WriteLine(output);
-}
-```
-
-### Batch Service Creation
+If your template is in a non-standard location:
 
 ```powershell
-$services = @(
-    @{ Name = "InvoiceService"; Company = "Acme" },
-    @{ Name = "OrderService"; Company = "Acme" },
-    @{ Name = "PaymentService"; Company = "Acme" }
-)
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName "MyService" `
+    -OutputPath "C:\Projects" `
+    -TemplatePath "D:\CustomTemplates\CQRSTemplate"
+```
+
+### Integration with CI/CD
+
+Run from CI/CD pipeline:
+
+```powershell
+# PowerShell in GitHub Actions / Azure Pipeline
+.\Create-MicroserviceFromTemplate.ps1 `
+    -ServiceName $env:SERVICE_NAME `
+    -OutputPath $env:OUTPUT_PATH `
+    -CompanyName $env:COMPANY_NAME `
+    -SkipRestore  # CI/CD will restore separately
+```
+
+### Batch Update All Services
+
+Update multiple existing services to newer template version:
+
+```powershell
+$services = @("InvoiceService", "OrderService", "PaymentService")
 
 foreach ($service in $services) {
-    dotnet new cqrs-microservice `
-        -n $service.Name `
-        -CompanyName $service.Company `
-        -o "C:\Projects\$($service.Name)"
+    Write-Host "Updating $service..."
+    
+    # Backup old version
+    Copy-Item $service "${service}_backup" -Recurse
+    
+    # Generate new version
+    .\Create-MicroserviceFromTemplate.ps1 `
+        -ServiceName $service `
+        -OutputPath "." `
+        -DontOpen
+    
+    # Merge changes manually
+    Write-Host "Review changes in $service"
 }
 ```
 
-## Support & Issues
+## Best Practices
 
-- Documentation: See `CLAUDE.md` and architecture guides
-- Report template issues: Create an issue in the template repository
-- Contribute improvements: Submit PRs to the template
+1. **Use Consistent Company Names**
+   - All services: same `-CompanyName` value
+   - Ensures consistent namespace hierarchy
+
+2. **Initialize Git Immediately**
+   ```powershell
+   cd MyService
+   git init
+   git add .
+   git commit -m "Initial commit from CQRS template"
+   ```
+
+3. **Keep Template Updated**
+   - Pull latest template regularly
+   - Compare with your services
+   - Adopt improvements
+
+4. **Document Customizations**
+   - Track template modifications
+   - Document why changes were made
+   - Version control your customizations
+
+5. **Test Generation**
+   - Generate to test directory first
+   - Verify before committing
+   - Build and test immediately
+
+## Architecture Reference
+
+After generating a service, review:
+- **CQRS Pattern:** [CLAUDE.md - Architecture Layers](CLAUDE.md#architecture-layers)
+- **Adding Features:** [CLAUDE.md - Adding a New Feature](CLAUDE.md#adding-a-new-feature---step-by-step)
+- **Queue Setup:** [QUEUE_INITIALIZATION_GUIDE.md](QUEUE_INITIALIZATION_GUIDE.md)
+- **Event Publishing:** [CLAUDE.md - Event Publishing Flow](CLAUDE.md#event-publishing-flow)
+
+## Support
+
+For issues or questions:
+
+1. Check [TEMPLATE_EXAMPLES.md](TEMPLATE_EXAMPLES.md) for real-world examples
+2. Review [CLAUDE.md](CLAUDE.md) for architecture guide
+3. See troubleshooting section above
+4. Run `.\Create-MicroserviceFromTemplate.ps1 -Help` for help
+
+---
+
+**Happy microservice creation!** 🚀
