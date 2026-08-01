@@ -55,24 +55,4 @@
       "description": "Visual Studio 2022 Compatibility"
     }
   },
-  "postActions": [
-    {
-      "id": "restore",
-      "description": "Restore NuGet packages",
-      "actionId": "210D431B-A78B-4D2F-B762-4F2289A3F200",
-      "args": {
-        "files": "*.sln"
-      },
-      "continueOnError": true
-    },
-    {
-      "id": "openSolution",
-      "description": "Open the solution in Visual Studio",
-      "actionId": "84C0DA21-51C8-4541-9E7C-61978820175F",
-      "args": {
-        "files": "*.sln"
-      },
-      "continueOnError": true
-    }
-  ]
 }
