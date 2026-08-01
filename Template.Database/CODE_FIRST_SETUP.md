@@ -346,13 +346,35 @@ services.AddDbContext<TemplateDbContext>(options =>
 
 ## 🐛 Troubleshooting
 
+### Existing Database Already Has Tables
+**Problem**: "There is already an object named 'TableName' in the database"  
+**Cause**: Starting Code First migrations on a database that already has tables
+
+**Solution:**
+1. The migration script now auto-detects this scenario
+2. It creates an `Initial` migration representing your current database state
+3. Future runs will only create migrations for new changes
+
+**Manual approach (if needed):**
+```bash
+# 1. Delete the problematic migration file
+rm Migrations/Auto_*.cs
+
+# 2. Re-run migration script - it will create Initial migration
+.\Migration.ps1
+
+# 3. If still failing, manually mark as applied:
+dotnet ef migrations add Initial -p Template.Database.csproj
+dotnet ef database update Initial -p Template.Database.csproj
+```
+
 ### Migration Won't Generate
 **Problem**: "No changes detected"
-**Solution**: Verify your model changes were saved and match OnModelCreating()
+**Solution**: Verify your model changes were saved and match your Configuration classes
 
 ### Migration Won't Apply
 **Problem**: "Foreign key constraint violated"
-**Solution**: Check data integrity; manually clean data or adjust migration
+**Solution**: Check data integrity; manually clean conflicting data or adjust migration
 
 ### DbContext Connection Issues
 **Problem**: "Cannot connect to database"
