@@ -20,7 +20,7 @@
     "architecture": "CQRS"
   },
   "sourceName": "Template",
-  "preferNameAsDefaultName": true,
+  "preferNameAsDefaultName": false,
   "exclude": [
     "**/[Bb]in/**",
     "**/[Oo]bj/**",
@@ -38,7 +38,7 @@
       "datatype": "text",
       "replaces": "Template",
       "fileRename": "Template",
-      "defaultValue": "MyMicroservice"
+      "binding": "ProjectName"
     },
     "CompanyName": {
       "type": "parameter",
