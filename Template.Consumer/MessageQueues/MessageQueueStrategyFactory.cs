@@ -5,13 +5,14 @@ using Template.Consumer.MessageQueues.Strategies;
 namespace Template.Consumer.MessageQueues
 {
     /// <summary>
-    /// Factory for creating message queue implementations using Strategy pattern.
+    /// Factory for creating message queue implementations and managers using Strategy pattern.
     /// Eliminates switch/if-else statements through polymorphism.
     /// Follows: Strategy, Factory, and Dependency Inversion principles.
     /// </summary>
     public class MessageQueueStrategyFactory
     {
         private readonly Dictionary<string, IMessageQueueStrategy> _strategies;
+        private readonly Dictionary<string, IMessageQueueManager> _managers;
 
         public MessageQueueStrategyFactory()
         {
@@ -22,6 +23,8 @@ namespace Template.Consumer.MessageQueues
                 { "Kafka", new KafkaMessageQueueStrategy() },
                 { "ServiceBus", new ServiceBusMessageQueueStrategy() }
             };
+
+            _managers = new Dictionary<string, IMessageQueueManager>(StringComparer.OrdinalIgnoreCase);
         }
 
         public IMessageQueue CreateMessageQueue(string messageQueueType, string? connectionString)
@@ -32,6 +35,56 @@ namespace Template.Consumer.MessageQueues
             LogMessageQueueCreation(messageQueueType);
 
             return strategy.CreateMessageQueue(connectionString);
+        }
+
+        public IMessageQueueManager CreateMessageQueueManager(string messageQueueType, string? connectionString)
+        {
+            ValidateInput(messageQueueType);
+
+            var cacheKey = $"{messageQueueType}:{connectionString}";
+
+            if (_managers.TryGetValue(cacheKey, out var cachedManager))
+                return cachedManager;
+
+            var manager = CreateManagerByType(messageQueueType, connectionString);
+
+            _managers[cacheKey] = manager;
+            LogMessageQueueManagerCreation(messageQueueType);
+
+            return manager;
+        }
+
+        private IMessageQueueManager CreateManagerByType(string messageQueueType, string? connectionString)
+        {
+            var type = messageQueueType.ToUpperInvariant();
+
+            if (type == "INMEMORY")
+                return new InMemoryMessageQueueManager();
+
+            if (type == "RABBITMQ")
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new ArgumentException("RabbitMQ connection string is required", nameof(connectionString));
+                return new RabbitMQMessageQueueManager(connectionString);
+            }
+
+            if (type == "KAFKA")
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new ArgumentException("Kafka connection string is required", nameof(connectionString));
+                return new KafkaMessageQueueManager(connectionString);
+            }
+
+            if (type == "SERVICEBUS")
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new ArgumentException("Service Bus connection string is required", nameof(connectionString));
+                return new ServiceBusMessageQueueManager(connectionString);
+            }
+
+            throw new InvalidOperationException(
+                $"Unsupported message queue type: '{messageQueueType}'. " +
+                $"Supported types: {string.Join(", ", GetSupportedMessageQueueTypes())}");
         }
 
         public bool IsValidMessageQueueType(string messageQueueType)
@@ -62,6 +115,11 @@ namespace Template.Consumer.MessageQueues
         private static void LogMessageQueueCreation(string messageQueueType)
         {
             Log.Information("Creating message queue of type: {MessageQueueType}", messageQueueType);
+        }
+
+        private static void LogMessageQueueManagerCreation(string messageQueueType)
+        {
+            Log.Information("Creating message queue manager of type: {MessageQueueType}", messageQueueType);
         }
     }
 }

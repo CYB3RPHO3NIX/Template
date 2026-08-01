@@ -5,6 +5,7 @@ using Template.Contracts.MessageQueue;
 using Template.Consumer.Configuration;
 using Template.Consumer.Listeners;
 using Template.Consumer.MessageQueues;
+using Template.Consumer.Services;
 
 namespace Template.Consumer
 {
@@ -23,6 +24,8 @@ namespace Template.Consumer
             var messageQueueConfig = BindMessageQueueConfiguration(configuration);
 
             RegisterMessageQueue(services, messageQueueConfig);
+            RegisterMessageQueueManager(services, messageQueueConfig);
+            RegisterQueueInitializationService(services);
             RegisterEventListeners(services);
             RegisterWorkerService(services);
 
@@ -45,6 +48,21 @@ namespace Template.Consumer
             var messageQueue = factory.CreateMessageQueue(config.Type, config.ConnectionString);
 
             services.AddSingleton<IMessageQueue>(messageQueue);
+        }
+
+        private static void RegisterMessageQueueManager(
+            IServiceCollection services,
+            MessageQueueConfiguration config)
+        {
+            var factory = new MessageQueueStrategyFactory();
+            var queueManager = factory.CreateMessageQueueManager(config.Type, config.ConnectionString);
+
+            services.AddSingleton<IMessageQueueManager>(queueManager);
+        }
+
+        private static void RegisterQueueInitializationService(IServiceCollection services)
+        {
+            services.AddSingleton<IQueueInitializationService, QueueInitializationService>();
         }
 
         private static void RegisterEventListeners(IServiceCollection services)

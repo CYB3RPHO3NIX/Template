@@ -1,5 +1,7 @@
 using Serilog;
 using Template.Contracts.MessageQueue;
+using Template.Consumer.Services;
+using Template.Consumer.Utilities;
 
 namespace Template.Consumer
 {
@@ -12,16 +14,19 @@ namespace Template.Consumer
     {
         private readonly IMessageQueue _messageQueue;
         private readonly IEnumerable<IEventListener> _eventListeners;
+        private readonly IQueueInitializationService _queueInitializationService;
         private readonly ILogger<Worker> _logger;
         private const int HealthCheckIntervalMs = 5000;
 
         public Worker(
             IMessageQueue messageQueue,
             IEnumerable<IEventListener> eventListeners,
+            IQueueInitializationService queueInitializationService,
             ILogger<Worker> logger)
         {
             _messageQueue = messageQueue ?? throw new ArgumentNullException(nameof(messageQueue));
             _eventListeners = eventListeners ?? throw new ArgumentNullException(nameof(eventListeners));
+            _queueInitializationService = queueInitializationService ?? throw new ArgumentNullException(nameof(queueInitializationService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -30,6 +35,7 @@ namespace Template.Consumer
             LogServiceStarting();
 
             await ConnectMessageQueue();
+            await InitializeQueues();
             await StartAllEventListeners(cancellationToken);
 
             await base.StartAsync(cancellationToken);
@@ -54,6 +60,22 @@ namespace Template.Consumer
         {
             await _messageQueue.ConnectAsync();
             Log.Information("Message queue connected");
+        }
+
+        private async Task InitializeQueues()
+        {
+            var queueNames = _eventListeners
+                .Select(listener => QueueNamingUtility.GetQueueNameFromListenerType(listener.GetType()))
+                .Distinct()
+                .ToList();
+
+            if (!queueNames.Any())
+            {
+                Log.Warning("No event listeners registered. No queues to initialize.");
+                return;
+            }
+
+            await _queueInitializationService.InitializeQueuesAsync(queueNames);
         }
 
         private async Task StartAllEventListeners(CancellationToken cancellationToken)
