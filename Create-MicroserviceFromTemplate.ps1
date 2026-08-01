@@ -46,7 +46,6 @@
 
 param(
     [Parameter(Mandatory = $true, HelpMessage = "Service name (e.g., InvoiceService)")]
-    [ValidatePattern('^[A-Z][a-zA-Z0-9]*$')]
     [string]$ServiceName,
 
     [Parameter(Mandatory = $false)]
@@ -83,7 +82,7 @@ function Test-IsValidServiceName {
     }
 
     Write-Error-Custom "Invalid service name: '$Name'"
-    Write-Info "Service name must be PascalCase and alphanumeric (e.g., InvoiceService)"
+    Write-Info "Use PascalCase with no special characters"
     return $false
 }
 
@@ -333,8 +332,8 @@ function Open-InVisualStudio {
         $slnPath = Join-Path $ProjectPath $slnFile
 
         try {
-            # Try to open with Visual Studio 2022
-            Start-Process -FilePath "devenv.exe" -ArgumentList "`"$slnPath`"" -ErrorAction SilentlyContinue
+            # Try to open with Visual Studio
+            & devenv.exe $slnPath
             Write-Success "Opened in Visual Studio"
         }
         catch {
