@@ -25,20 +25,15 @@
     "ServiceName": {
       "type": "parameter",
       "description": "The name of your microservice (e.g., InvoiceService, OrderService)",
+      "datatype": "text",
       "replaces": "Template",
       "fileRename": "Template",
       "defaultValue": "MyMicroservice"
     },
-    "RootNamespace": {
-      "type": "derived",
-      "valueSource": "ServiceName",
-      "valueTransform": "PascalCase",
-      "replaces": "Template",
-      "description": "The root namespace for the project"
-    },
     "CompanyName": {
       "type": "parameter",
       "description": "Your company name (optional)",
+      "datatype": "text",
       "defaultValue": "Enterprise",
       "replaces": "Enterprise",
       "globalReplacement": true
