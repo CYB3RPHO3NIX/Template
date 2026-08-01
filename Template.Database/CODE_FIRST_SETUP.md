@@ -19,8 +19,22 @@ This database project uses **Entity Framework Core Code First** approach. All da
 
 ### DbContext
 - **File**: `Domain/Contexts/TemplateDbContext.cs`
-- **Purpose**: Maps entities to database tables
-- **Method**: `OnModelCreating()` defines schema via Fluent API
+- **Purpose**: Main database context for dependency injection
+- **Method**: `OnModelCreating()` loads all entity configurations automatically
+
+### Entity Configurations
+- **Location**: `Domain/Configurations/`
+- **Purpose**: Separate configuration classes for each entity (Fluent API)
+- **Files**:
+  - `UserConfiguration.cs` - User table schema
+  - `RoleConfiguration.cs` - Role table schema
+  - `PermissionConfiguration.cs` - Permission table schema
+  - `UserRoleConfiguration.cs` - User-Role junction table
+  - `UserPermissionConfiguration.cs` - User-Permission junction table
+  - `RolePermissionConfiguration.cs` - Role-Permission junction table
+  - `ApiLogConfiguration.cs` - API logs table
+  - `ApplicationLogConfiguration.cs` - Application logs table
+- **Each configuration defines**:
   - Table names and schemas
   - Column constraints (max length, type, default values)
   - Indexes
@@ -110,31 +124,52 @@ The migration script applies changes immediately:
 
 ### Entity Configuration Pattern
 
-All entities are configured in `TemplateDbContext.OnModelCreating()`:
+Each entity has its own configuration class in `Domain/Configurations/`:
 
+**File: UserConfiguration.cs**
 ```csharp
-modelBuilder.Entity<User>(entity =>
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Template.Database.Domain.Entities;
+
+namespace Template.Database.Domain.Configurations;
+
+public class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    // Table and schema
-    entity.ToTable("Users", "identity");
+    public void Configure(EntityTypeBuilder<User> entity)
+    {
+        // Table and schema
+        entity.ToTable("Users", "identity");
 
-    // Indexes
-    entity.HasIndex(e => e.Email, "IX_Users_Email");
-    entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
+        // Indexes
+        entity.HasIndex(e => e.Email, "IX_Users_Email");
+        entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
 
-    // Columns
-    entity.Property(e => e.UserId).HasDefaultValueSql("(newsequentialid())");
-    entity.Property(e => e.Email).HasMaxLength(255);
-    entity.Property(e => e.IsActive).HasDefaultValue(true);
-    entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getutcdate())");
+        // Columns
+        entity.Property(e => e.UserId).HasDefaultValueSql("(newsequentialid())");
+        entity.Property(e => e.Email).HasMaxLength(255);
+        entity.Property(e => e.IsActive).HasDefaultValue(true);
+        entity.Property(e => e.CreatedOn).HasDefaultValueSql("(getutcdate())");
 
-    // Foreign keys
-    entity.HasOne(d => d.CreatedByNavigation)
-        .WithMany(p => p.InverseCreatedByNavigation)
-        .HasForeignKey(d => d.CreatedBy)
-        .HasConstraintName("FK_Users_CreatedBy");
-});
+        // Foreign keys
+        entity.HasOne(d => d.CreatedByNavigation)
+            .WithMany(p => p.InverseCreatedByNavigation)
+            .HasForeignKey(d => d.CreatedBy)
+            .HasConstraintName("FK_Users_CreatedBy");
+    }
+}
 ```
+
+**DbContext auto-loads all configurations:**
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    // Automatically loads all IEntityTypeConfiguration implementations
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(TemplateDbContext).Assembly);
+}
+```
+
+This approach keeps each configuration clean and separated.
 
 ### Adding New Entities
 
@@ -187,8 +222,17 @@ modelBuilder.Entity<User>(entity =>
 Template.Database/
 ├── Domain/
 │   ├── Contexts/
-│   │   ├── TemplateDbContext.cs           # DbContext configuration
-│   │   └── TemplateDbContextFactory.cs    # Factory for migrations
+│   │   ├── TemplateDbContext.cs           # Main DbContext
+│   │   └── TemplateDbContextFactory.cs    # Design-time factory for migrations
+│   ├── Configurations/
+│   │   ├── UserConfiguration.cs           # Entity configs
+│   │   ├── RoleConfiguration.cs
+│   │   ├── PermissionConfiguration.cs
+│   │   ├── UserRoleConfiguration.cs
+│   │   ├── UserPermissionConfiguration.cs
+│   │   ├── RolePermissionConfiguration.cs
+│   │   ├── ApiLogConfiguration.cs
+│   │   └── ApplicationLogConfiguration.cs
 │   └── Entities/
 │       ├── User.cs
 │       ├── Role.cs
@@ -201,7 +245,8 @@ Template.Database/
 ├── Migrations/
 │   ├── 20260801120000_Initial.cs         # Generated automatically
 │   └── TemplateDbContextModelSnapshot.cs # EF Core internals
-├── Migration.ps1                          # Run migrations
+├── Migration.ps1                          # Run this to generate & apply migrations
+├── CODE_FIRST_SETUP.md                    # This guide
 └── Template.Database.csproj
 ```
 
