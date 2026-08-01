@@ -46,21 +46,45 @@ namespace Template.Consumer.MessageQueues
             if (_managers.TryGetValue(cacheKey, out var cachedManager))
                 return cachedManager;
 
-            var manager = messageQueueType.ToUpperInvariant() switch
-            {
-                "INMEMORY" => new InMemoryMessageQueueManager(),
-                "RABBITMQ" => new RabbitMQMessageQueueManager(connectionString ?? throw new ArgumentException("RabbitMQ connection string is required")),
-                "KAFKA" => new KafkaMessageQueueManager(connectionString ?? throw new ArgumentException("Kafka connection string is required")),
-                "SERVICEBUS" => new ServiceBusMessageQueueManager(connectionString ?? throw new ArgumentException("Service Bus connection string is required")),
-                _ => throw new InvalidOperationException(
-                    $"Unsupported message queue type: '{messageQueueType}'. " +
-                    $"Supported types: {string.Join(", ", GetSupportedMessageQueueTypes())}")
-            };
+            var manager = CreateManagerByType(messageQueueType, connectionString);
 
             _managers[cacheKey] = manager;
             LogMessageQueueManagerCreation(messageQueueType);
 
             return manager;
+        }
+
+        private IMessageQueueManager CreateManagerByType(string messageQueueType, string? connectionString)
+        {
+            var type = messageQueueType.ToUpperInvariant();
+
+            if (type == "INMEMORY")
+                return new InMemoryMessageQueueManager();
+
+            if (type == "RABBITMQ")
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new ArgumentException("RabbitMQ connection string is required", nameof(connectionString));
+                return new RabbitMQMessageQueueManager(connectionString);
+            }
+
+            if (type == "KAFKA")
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new ArgumentException("Kafka connection string is required", nameof(connectionString));
+                return new KafkaMessageQueueManager(connectionString);
+            }
+
+            if (type == "SERVICEBUS")
+            {
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new ArgumentException("Service Bus connection string is required", nameof(connectionString));
+                return new ServiceBusMessageQueueManager(connectionString);
+            }
+
+            throw new InvalidOperationException(
+                $"Unsupported message queue type: '{messageQueueType}'. " +
+                $"Supported types: {string.Join(", ", GetSupportedMessageQueueTypes())}");
         }
 
         public bool IsValidMessageQueueType(string messageQueueType)
