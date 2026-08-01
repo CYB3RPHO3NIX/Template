@@ -1,11 +1,12 @@
 $ErrorActionPreference = 'Stop'
 
 # Entity Framework Core - Code First Migration Script
-# This script manages database migrations using the Code First approach.
+# Handles both new and existing databases intelligently
 
 $projectDirectory = $PSScriptRoot
 $projectPath = Join-Path $projectDirectory 'Template.Database.csproj'
 $contextName = 'TemplateDbContext'
+$migrationsPath = Join-Path $projectDirectory 'Migrations'
 
 Write-Host ""
 Write-Host "=================================================="
@@ -36,42 +37,79 @@ Write-Host ""
 Push-Location $projectDirectory
 
 try {
-    # Step 0: Check if this is an existing database
+    # Step 0: Check database state
     Write-Host "=================================================="
     Write-Host "Step 0: Checking Database State"
     Write-Host "=================================================="
     Write-Host ""
 
-    # Try to list existing migrations
-    $migrationList = dotnet ef migrations list `
+    # Try to get migration list
+    $migrationList = @(dotnet ef migrations list `
         --project $projectPath `
-        --context $contextName 2>&1
+        --context $contextName 2>&1)
 
     $hasInitialMigration = $migrationList | Select-String "Initial" -Quiet
+    $hasMigrations = ($migrationList.Count -gt 0) -and (-not ($migrationList[0] -match "No migrations"))
 
-    if (-not $hasInitialMigration) {
+    if (-not $hasMigrations) {
         Write-Host "[!] No migration history found" -ForegroundColor Yellow
-        Write-Host "[!] Assuming existing database - initializing migration history..." -ForegroundColor Yellow
+        Write-Host "[!] This appears to be an existing database" -ForegroundColor Yellow
+        Write-Host "[*] Creating Initial migration to track current schema..." -ForegroundColor Cyan
         Write-Host ""
 
-        # Create Initial migration that represents the current database state
-        Write-Host "[*] Creating Initial migration..." -ForegroundColor Cyan
+        # Create Initial migration
         dotnet ef migrations add Initial `
             --project $projectPath `
-            --context $contextName
+            --context $contextName 2>&1 | Out-Null
 
         if ($LASTEXITCODE -eq 0) {
             Write-Host "[OK] Initial migration created" -ForegroundColor Green
-            Write-Host "[!] Note: Initial migration won't recreate existing tables" -ForegroundColor Yellow
-            Write-Host ""
+
+            # Find and edit the Initial migration to remove table creation
+            $initialMigrationFile = Get-ChildItem -Path $migrationsPath -Filter "*.cs" `
+                | Where-Object { $_.Name -match "Initial\.cs$" -and $_.Name -notmatch "Designer" } `
+                | Select-Object -First 1
+
+            if ($null -ne $initialMigrationFile) {
+                Write-Host "[*] Emptying Initial migration (tables already exist)..." -ForegroundColor Cyan
+
+                $content = Get-Content $initialMigrationFile.FullName -Raw
+
+                # Use more robust regex that handles nested braces
+                # Replace entire Up method body with empty
+                $content = $content -replace `
+                    '(protected override void Up\(MigrationBuilder migrationBuilder\)\s*\{).*?(\n\s*})', `
+                    '${1}`n        `n    ${2}'
+
+                # Replace entire Down method body with empty
+                $content = $content -replace `
+                    '(protected override void Down\(MigrationBuilder migrationBuilder\)\s*\{).*?(\n\s*})', `
+                    '${1}`n        `n    ${2}'
+
+                Set-Content -Path $initialMigrationFile.FullName -Value $content
+                Write-Host "[OK] Initial migration emptied (no table recreation)" -ForegroundColor Green
+            }
+
+            # Apply the empty Initial migration
+            Write-Host "[*] Applying Initial migration..." -ForegroundColor Cyan
+            dotnet ef database update Initial `
+                --project $projectPath `
+                --context $contextName 2>&1
+
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "[ERROR] Could not apply Initial migration" -ForegroundColor Red
+                exit 1
+            }
+
+            Write-Host "[OK] Initial migration applied" -ForegroundColor Green
         }
         else {
-            Write-Host "[!] Could not create Initial migration (expected for existing databases)" -ForegroundColor Yellow
-            Write-Host ""
+            Write-Host "[!] Initial migration creation reported issues" -ForegroundColor Yellow
         }
+        Write-Host ""
     }
 
-    # Step 1: Generate Migration
+    # Step 1: Check for model changes
     Write-Host "=================================================="
     Write-Host "Step 1: Checking for Model Changes"
     Write-Host "=================================================="
@@ -102,9 +140,9 @@ try {
         Write-Host "[OK] Migration generated: $migrationName" -ForegroundColor Green
         Write-Host ""
 
-        # Step 2: Update Database
+        # Step 3: Update Database
         Write-Host "=================================================="
-        Write-Host "Step 2: Updating Database"
+        Write-Host "Step 3: Updating Database"
         Write-Host "=================================================="
         Write-Host ""
 
@@ -117,8 +155,7 @@ try {
 
         if ($LASTEXITCODE -ne 0) {
             Write-Host "[ERROR] Database update failed" -ForegroundColor Red
-            Write-Host "[!] This may occur if tables already exist in the database." -ForegroundColor Yellow
-            Write-Host "[!] The migration was created but not applied." -ForegroundColor Yellow
+            Write-Host "[!] Check the error above for details" -ForegroundColor Yellow
             exit 1
         }
 
@@ -127,7 +164,7 @@ try {
         Write-Host ""
     }
 
-    # Step 3: List Migrations
+    # Step 4: List Migrations
     Write-Host "=================================================="
     Write-Host "Migration History"
     Write-Host "=================================================="

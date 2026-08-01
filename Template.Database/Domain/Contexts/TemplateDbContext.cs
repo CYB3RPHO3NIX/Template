@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Template.Database.Domain.Entities;
@@ -13,8 +13,6 @@ public partial class TemplateDbContext : DbContext
     }
 
     public virtual DbSet<ApiLog> ApiLogs { get; set; }
-
-    public virtual DbSet<ApplicationLog> ApplicationLogs { get; set; }
 
     public virtual DbSet<Permission> Permissions { get; set; }
 
