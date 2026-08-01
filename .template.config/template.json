@@ -21,6 +21,16 @@
   },
   "sourceName": "Template",
   "preferNameAsDefaultName": true,
+  "exclude": [
+    "**/[Bb]in/**",
+    "**/[Oo]bj/**",
+    "**/.vs/**",
+    "**/.git/**",
+    "**/.vscode/**",
+    "**/node_modules/**",
+    "**/*.user",
+    "**/*.log"
+  ],
   "symbols": {
     "ServiceName": {
       "type": "parameter",
@@ -37,6 +47,12 @@
       "defaultValue": "Enterprise",
       "replaces": "Enterprise",
       "globalReplacement": true
+    }
+  },
+  "forms": {
+    "vs-2022": {
+      "name": "Visual Studio 2022",
+      "description": "Visual Studio 2022 Compatibility"
     }
   },
   "postActions": [
