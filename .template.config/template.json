@@ -33,6 +33,7 @@
         ".vs/**",
         "**/.git/**",
         ".git/**",
+        "**/Migrations/**",
         "**/.vscode/**",
         "**/node_modules/**",
         "**/*.user",
