@@ -21,15 +21,25 @@
   },
   "sourceName": "Template",
   "preferNameAsDefaultName": false,
-  "exclude": [
-    "**/[Bb]in/**",
-    "**/[Oo]bj/**",
-    "**/.vs/**",
-    "**/.git/**",
-    "**/.vscode/**",
-    "**/node_modules/**",
-    "**/*.user",
-    "**/*.log"
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**",
+        "**/[Bb]in/**",
+        "**/[Oo]bj/**",
+        "**/.vs/**",
+        ".vs/**",
+        "**/.git/**",
+        ".git/**",
+        "**/Migrations/**",
+        "**/.vscode/**",
+        "**/node_modules/**",
+        "**/*.user",
+        "**/*.log"
+      ]
+    }
   ],
   "symbols": {
     "ServiceName": {
@@ -54,5 +64,5 @@
       "name": "Visual Studio 2022",
       "description": "Visual Studio 2022 Compatibility"
     }
-  },
+  }
 }

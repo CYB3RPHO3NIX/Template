@@ -378,6 +378,9 @@ local.settings.json
 *.mdf
 *.ldf
 
+# EF Core Code First migrations are auto-generated per-environment by Migration.ps1 and not versioned
+Template.Database/Migrations/
+
 # Frontend/package artifacts if added later
 node_modules/
 
