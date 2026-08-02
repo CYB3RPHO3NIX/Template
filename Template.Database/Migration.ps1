@@ -119,23 +119,32 @@ try {
     Write-Host "[*] Context: $contextName" -ForegroundColor Cyan
     Write-Host ""
 
-    $timestamp = Get-Date -Format "yyyyMMddHHmmss"
-    $migrationName = "Auto_$timestamp"
-
-    Write-Host "[*] Generating migration: $migrationName" -ForegroundColor Cyan
-    Write-Host ""
-
-    dotnet ef migrations add $migrationName `
+    dotnet ef migrations has-pending-model-changes `
         --project $projectPath `
-        --context $contextName 2>&1
+        --context $contextName 2>&1 | Out-Null
 
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host ""
+    if ($LASTEXITCODE -eq 0) {
         Write-Host "[!] No changes detected" -ForegroundColor Yellow
         Write-Host "[!] Your model is already in sync with the database." -ForegroundColor Yellow
         Write-Host ""
     }
     else {
+        $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+        $migrationName = "Auto_$timestamp"
+
+        Write-Host "[*] Generating migration: $migrationName" -ForegroundColor Cyan
+        Write-Host ""
+
+        dotnet ef migrations add $migrationName `
+            --project $projectPath `
+            --context $contextName 2>&1
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host ""
+            Write-Host "[ERROR] Migration generation failed" -ForegroundColor Red
+            exit 1
+        }
+
         Write-Host ""
         Write-Host "[OK] Migration generated: $migrationName" -ForegroundColor Green
         Write-Host ""
